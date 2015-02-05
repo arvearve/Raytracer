@@ -14,17 +14,19 @@ Vec3f Vec3f::normalize(const Vec3f &v) {
 }
 
 Vec3f & Vec3f::normalize(){
-	x = x / length();
-	y = y / length();
-	z = z / length();
+    float length = this->length();
+	x = x / length;
+	y = y / length;
+	z = z / length;
 	return *this;
 }
 
 RGBApixel Vec3f::toRGBAPixel() const{
     RGBApixel pixel;
-    pixel.Red = x;
-    pixel.Blue = y;
-    pixel.Green = z;
+    pixel.Red = (int)x;
+    pixel.Blue = (int)y;
+    pixel.Green = (int)z;
+    pixel.Alpha = 255;
     return pixel;
 }
 //Vec3f::Vec3f(const Point p):x(p.x), y(p.y), z(p.z){}

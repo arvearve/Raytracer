@@ -63,16 +63,18 @@ void render(void) {
 			float sy = (j + 1.0 / 2.0) * (1.0 / IMAGE_HEIGHT);
 			Pos P = M + X*(2.0 * sx - 1.0) + Y * (2.0 * sy - 1.0);
             Ray ray = Ray(E, P-E);
+
 			ObjIO * nextObj = scene->objects;
 			while (nextObj != nullptr){
 				if (nextObj->type == SPHERE_OBJ) {
                     SphereIO* sphere = (SphereIO*)nextObj->data;
-                    Pos center = Pos(sphere->origin);
-                    float radius = sphere->radius;
-                    Colr diffuse = nextObj->material->diffColor;
-                    Sphere sp = Sphere(center, radius, diffuse);
+                    MaterialIO* material = nextObj->material;
+                    Sphere sp = Sphere(*sphere, *material);
                     sp.intersect(ray);
-                    image.SetPixel(i, IMAGE_HEIGHT - j - 1, (ray.color*256).toRGBAPixel());
+                    RGBApixel *pixel = image(i, IMAGE_HEIGHT - j - 1);
+                    pixel->Red = ray.color.x*255;
+                    pixel->Green = ray.color.y*255;
+                    pixel->Blue = ray.color.z*255;
 				}
                 nextObj = nextObj->next;
 			}
