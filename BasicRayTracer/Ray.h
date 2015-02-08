@@ -3,7 +3,7 @@
 #include <math.h>
 #include "Vec3f.h"
 #include "scene_io.h"
-#define BACKGROUND_COLOR Colr(0.5,0.5,0.5)
+#define BACKGROUND_COLOR Colr(0,0,0)
 class Ray
 {
 public:
@@ -24,6 +24,7 @@ public:
     Colr diffuse(const Pos point) const;
     Colr specular(const Pos point) const;
     Colr ambient() const;
+    Colr reflection(const Pos point, const int bounces) const;
     float attenuationFactor(const Pos point, const LightIO* light) const;
     Ray(Pos startPosition, Vec3f direction);
 

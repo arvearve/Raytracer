@@ -10,7 +10,8 @@ private:
     float radius;
     float radius_sq;
     float discriminant(const float a, const float b, const float c) const;
-    float quadratic(const float a, const float b, const float discriminant) const;
+    float quadratic_min(const float a, const float b, const float discriminant) const;
+    float quadratic_max(const float a, const float b, const float discriminant) const;
 
 public:
 

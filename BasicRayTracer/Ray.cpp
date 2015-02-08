@@ -25,6 +25,7 @@ Pos Ray::intersectionPoint(){
 
 
 Colr Ray::trace(int bounces){
+    if(bounces <= 0){return Colr(0,0,0);}
 
     // Find which object we intersect closest:
     for ( Primitive* object : objects ) {
@@ -36,12 +37,20 @@ Colr Ray::trace(int bounces){
     Colr diffuseColor = diffuse(intersectionPoint());
     Colr ambientColor = ambient();
     Colr specularColor = specular(intersectionPoint());
-    // Shadow ray
-
+    Colr reflectionColor = reflection(intersectionPoint(), bounces-1) * Colr(material.specColor);
     // Reflection ray
-    Colr result = ambientColor + diffuseColor + specularColor;
+    Colr result = ambientColor + diffuseColor + specularColor + reflectionColor;
     result.capColor();
     return result;
+}
+
+Colr Ray::reflection(const Pos point, const int bounces) const {
+    Vec3f incident = direction * -1.0;
+    Vec3f R = intersectionNormal* 2.0 * Vec3f::dot(incident, intersectionNormal)  - incident;
+    Ray reflectionRay = Ray(point, R);
+    Colr reflectionColor = reflectionRay.trace(bounces);
+    return reflectionColor;
+
 }
 
 Colr Ray::diffuse(const Pos point) const {

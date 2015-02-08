@@ -76,11 +76,14 @@ void render(void) {
     image.SetSize(IMAGE_WIDTH, IMAGE_HEIGHT);
 	for (int j = 0; j < IMAGE_HEIGHT; j++) {
 		for (int i = 0; i < IMAGE_WIDTH; i++) {
+            if(i == 307 && j == 228){
+                int fesk = 3;
+            }
 			float sx = (i + 1.0 / 2.0) * (1.0 / IMAGE_WIDTH);
 			float sy = (j + 1.0 / 2.0) * (1.0 / IMAGE_HEIGHT);
 			Pos P = M + X*(2.0 * sx - 1.0) + Y * (2.0 * sy - 1.0);
             Ray ray = Ray(E, P-E);
-            Colr rayColor = ray.trace(10);
+            Colr rayColor = ray.trace(3);
 
             RGBApixel *pixel = image(i, IMAGE_HEIGHT - j - 1);
             pixel->Red = rayColor.x*255;
