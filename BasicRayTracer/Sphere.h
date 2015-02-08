@@ -5,19 +5,21 @@
 #include "scene_io.h"
 class Sphere : public Primitive
 {
-public:
+private:
 	Pos center;
-    MaterialIO material;
-	float radius;
+    float radius;
     float radius_sq;
+    float discriminant(const float a, const float b, const float c) const;
+    float quadratic(const float a, const float b, const float discriminant) const;
+
+public:
+
+    MaterialIO material;
 	Sphere(Pos center, float radius, Colr diffuse);
     Sphere(const SphereIO data, const MaterialIO material);
 
-    void intersect(Ray &ray) const;
-    Colr diffuse(const Pos point) const;
-    Vec3f normal(const Pos point) const;
-	float discriminant(const float a, const float b, const float c) const;
-    float quadratic(const float a, const float b, const float discriminant) const;
+    virtual void intersect(Ray &ray) const;
+    virtual Vec3f normal(const Pos point) const;
 };
 
 #endif

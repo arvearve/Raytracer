@@ -31,24 +31,9 @@ void Sphere::intersect(Ray &ray) const{
         return;
     }
     ray.t_max = t;
-    ray.color = diffuse(ray.intersectionPoint());
+    ray.material = material;
+    ray.intersectionNormal = normal(ray.intersectionPoint());
 }
-
-
-Colr Sphere::diffuse(const Pos point) const{
-    Colr result = Colr(0,0,0);
-    extern SceneIO *scene;
-    LightIO *light = scene->lights;
-    while (light != NULL){
-        Vec3f directionToLight = (Pos(light->position) - point).normalize();
-        light = light->next;
-        result = result + Colr(material.diffColor) * fmax(0,Vec3f::dot(directionToLight,normal(point)));
-        result = result * (1.0/sqrt(3));
-    }
-    return result;
-}
-
-
 
 Vec3f Sphere::normal(const Pos point) const{
     return Vec3f::normalize(Vec3f(point - center));

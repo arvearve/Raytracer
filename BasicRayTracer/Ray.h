@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include "Vec3f.h"
 #include "scene_io.h"
 #define BACKGROUND_COLOR Colr(0.5,0.5,0.5)
@@ -13,10 +14,15 @@ public:
 
     Colr color;
     float t_max;
+    MaterialIO material;
+    Vec3f intersectionNormal;
 
 
     Pos intersectionPoint();
     Colr trace(int bounces);
+    Colr diffuse(const Pos point) const;
+    Colr specular(const Pos point) const;
+    Colr ambient() const;
 
     Ray(Pos startPosition, Vec3f direction);
 

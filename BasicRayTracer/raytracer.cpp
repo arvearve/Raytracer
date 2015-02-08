@@ -1,5 +1,6 @@
 //#include <windows.h>
 #include <stdio.h>
+#include <vector>
 //#include <atlimage.h>
 #include "scene_io.h"
 //#include "Timer.h"
@@ -14,7 +15,8 @@
 typedef unsigned char u08;
 
 SceneIO *scene = NULL;
-
+std::vector<LightIO*> lights;
+std::vector<Primitive*> objects;
 
 
 static void loadScene(char *name) {
@@ -24,9 +26,24 @@ static void loadScene(char *name) {
 	/* hint: use the Visual Studio debugger ("watch" feature) to probe the
 	   scene data structure and learn more about it for each of the given scenes */
 
+    /* write any code to transfer from the scene data structure to your own here */
+    /* */
+    ObjIO * nextObj = scene->objects;
+    while (nextObj != nullptr){
+        if (nextObj->type == SPHERE_OBJ) {
+            SphereIO* sphere = (SphereIO*)nextObj->data;
+            MaterialIO* material = nextObj->material;
 
-	/* write any code to transfer from the scene data structure to your own here */
-	/* */
+            objects.push_back(new Sphere(*sphere, *material));
+        }
+        nextObj = nextObj->next;
+    }
+    LightIO *nextLight = scene->lights;
+    while (nextLight != nullptr) {
+        lights.push_back(nextLight);
+        nextLight = nextLight->next;
+    }
+
 	return;
 }
 
@@ -63,21 +80,13 @@ void render(void) {
 			float sy = (j + 1.0 / 2.0) * (1.0 / IMAGE_HEIGHT);
 			Pos P = M + X*(2.0 * sx - 1.0) + Y * (2.0 * sy - 1.0);
             Ray ray = Ray(E, P-E);
+            Colr rayColor = ray.trace(10);
 
-			ObjIO * nextObj = scene->objects;
-			while (nextObj != nullptr){
-				if (nextObj->type == SPHERE_OBJ) {
-                    SphereIO* sphere = (SphereIO*)nextObj->data;
-                    MaterialIO* material = nextObj->material;
-                    Sphere sp = Sphere(*sphere, *material);
-                    sp.intersect(ray);
-                    RGBApixel *pixel = image(i, IMAGE_HEIGHT - j - 1);
-                    pixel->Red = ray.color.x*255;
-                    pixel->Green = ray.color.y*255;
-                    pixel->Blue = ray.color.z*255;
-				}
-                nextObj = nextObj->next;
-			}
+            RGBApixel *pixel = image(i, IMAGE_HEIGHT - j - 1);
+            pixel->Red = rayColor.x*255;
+            pixel->Green = rayColor.y*255;
+            pixel->Blue = rayColor.z*255;
+
 		}
 	}
 
