@@ -49,7 +49,7 @@ Colr Ray::diffuse(const Pos point) const {
     for(LightIO* light : lights){
         Vec3f directionToLight = (Vec3f(light->position) - point).normalize();
         result = result + Colr(material.diffColor) * fmax(0,Vec3f::dot(directionToLight,intersectionNormal));
-        result = result * attenuationFactor(point, light);
+        result = result * Colr(light->color) * attenuationFactor(point, light);
     }
     return result * (1-material.ktran);
 }
@@ -65,7 +65,7 @@ Colr Ray::specular(const Pos point) const {
         Vec3f R = ((Q * 2) - L).normalize();
         float dot = fmax(0,Vec3f::dot(R, V));
         float pow = powf(dot, q);
-        result = result + Ks * pow * attenuationFactor(point, light);
+        result = result + Ks * pow * Colr(light->color) * attenuationFactor(point, light);
     }
     return result;
 }
