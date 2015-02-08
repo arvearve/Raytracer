@@ -23,6 +23,7 @@ public:
     float length(void) const;
     Vec3f& normalize();
     RGBApixel toRGBAPixel() const;
+    void capColor();
     static float dot(const Vec3f &a, const Vec3f &b);
     static Vec3f cross(const Vec3f &a, const Vec3f &b);
     static float angle(const Vec3f &a, const Vec3f &b);

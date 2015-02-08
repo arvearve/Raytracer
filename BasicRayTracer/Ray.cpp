@@ -35,21 +35,48 @@ Colr Ray::trace(int bounces){
     }
     Colr diffuseColor = diffuse(intersectionPoint());
     Colr ambientColor = ambient();
-
+    Colr specularColor = specular(intersectionPoint());
     // Shadow ray
 
     // Reflection ray
-    return ambientColor + diffuseColor;
+    Colr result = ambientColor + diffuseColor + specularColor;
+    result.capColor();
+    return result;
 }
 
 Colr Ray::diffuse(const Pos point) const {
     Colr result = Colr(0,0,0);
     for(LightIO* light : lights){
-        Vec3f directionToLight = (Pos(light->position) - point).normalize();
+        Vec3f directionToLight = (Vec3f(light->position) - point).normalize();
         result = result + Colr(material.diffColor) * fmax(0,Vec3f::dot(directionToLight,intersectionNormal));
-        result = result * (1.0/sqrt(3));
+        result = result * attenuationFactor(point, light);
     }
     return result * (1-material.ktran);
+}
+
+Colr Ray::specular(const Pos point) const {
+    Colr result = Colr(0,0,0);
+    float q = material.shininess * 20.0;
+    Colr Ks = Colr(material.specColor);
+    Vec3f V = direction*(-1.0); // Incident flipped - ray from point to eye. Normalized.
+    for( auto light:lights) {
+        Vec3f L = Vec3f(light->position) - point; // Vector from the point to the light.
+        Vec3f Q = intersectionNormal * Vec3f::dot(intersectionNormal, L);
+        Vec3f R = ((Q * 2) - L).normalize();
+        float dot = fmax(0,Vec3f::dot(R, V));
+        float pow = powf(dot, q);
+        result = result + Ks * pow * attenuationFactor(point, light);
+    }
+    return result;
+}
+
+float Ray::attenuationFactor(const Pos point, const LightIO* light) const {
+    if(light->type == DIRECTIONAL_LIGHT){ return 1.0;}
+    float c1 = 0.25;
+    float c2 = 0.1;
+    float c3 = 0.01;
+    float d = (point - Vec3f(light->position)).length(); // distance between light and shaded point.
+    return fmin(1.0, 1.0 / (c1 + c2*d + c3*d*d));
 }
 
 Colr Ray::ambient() const {

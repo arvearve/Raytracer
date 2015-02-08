@@ -29,7 +29,11 @@ RGBApixel Vec3f::toRGBAPixel() const{
     pixel.Alpha = 255;
     return pixel;
 }
-//Vec3f::Vec3f(const Point p):x(p.x), y(p.y), z(p.z){}
+void Vec3f::capColor(){
+    x = fminf(x, 1.0);
+    y = fminf(y, 1.0);
+    z = fminf(z, 1.0);
+}
 
 float Vec3f::length(void) const {
     float lengthSq = x*x + y*y + z*z;
