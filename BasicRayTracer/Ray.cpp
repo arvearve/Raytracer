@@ -15,6 +15,7 @@ Pos Ray::intersectionPoint(){
     return startPosition + direction * t_max;
 }
 
+
 Colr Ray::trace(int bounces){
     if(bounces <= 0){return Colr(0,0,0);}
 
@@ -22,12 +23,20 @@ Colr Ray::trace(int bounces){
     for ( Primitive* object : objects ) {
         object->intersect(*this);
     }
+
+    // Keep track of which objects we have crossed into, for refraction rays etc..
+    // Are we currently inside an object?
+    bool isInside = insideObjects.size() > 0;
+    bool enteringCurrentObject = insideObjects.find(currentObject) == insideObjects.end();
+    if(!enteringCurrentObject){ intersectionNormal = intersectionNormal * -1.0; }
+
     if(t_max == INFINITY){ // No hit.
         return BACKGROUND_COLOR;
     }
     Colr diffuseColor = diffuse(intersectionPoint());
     Colr ambientColor = ambient();
     Colr specularColor = specular(intersectionPoint());
+
     Colr reflectionColor;
     if(material.specColor[0] == 0.0
        && material.specColor[1] == 0.0
@@ -37,7 +46,20 @@ Colr Ray::trace(int bounces){
     else {
         reflectionColor = reflection(intersectionPoint(), bounces-1) * Colr(material.specColor);
     }
-    Colr result = ambientColor + diffuseColor + specularColor + reflectionColor;
+
+    Colr refractionColor;
+    if(material.ktran > 0.001){
+        std::unordered_set<Primitive*> mySet = std::unordered_set<Primitive*>(insideObjects);
+        if(enteringCurrentObject){ mySet.insert(currentObject);}
+        else { mySet.erase(currentObject);}
+        float ior_a = isInside ? IOR_GLASS : IOR_AIR;
+        float ior_b = mySet.size() > 0 ? IOR_GLASS : IOR_AIR;
+        refractionColor = refraction(intersectionPoint(), bounces-1, ior_a, ior_b) * material.ktran;
+    }else{
+        refractionColor = Colr(0,0,0);
+    }
+
+    Colr result = ambientColor + diffuseColor + specularColor + reflectionColor + refractionColor;
     result.capColor();
     return result;
 }
@@ -49,6 +71,23 @@ Colr Ray::reflection(const Pos point, const int bounces) const {
     Colr reflectionColor = reflectionRay.trace(bounces);
     return reflectionColor;
 
+}
+
+Colr Ray::refraction(const Pos point, const int bounces, float n1, float n2){
+    // Adapted from http://steve.hollasch.net/cgindex/render/refraction.txt
+    // Ni, Nt are incoming and transmitted index of refraction
+    float eta = n1/n2;
+    float c1 = -Vec3f::dot(direction, intersectionNormal);
+    float cs2 = 1.0 - eta * eta * (1.0 - c1 * c1);
+    if(cs2 < 0.0) {
+        return Colr(0,1,0); // total internal reflection
+    }
+    Vec3f transmittedDirection = (direction * eta) + intersectionNormal * (eta * c1 - sqrt(cs2));
+    Pos startPositionBumped = point + (intersectionNormal * BUMP_EPSILON * -1.0);
+
+    Ray refractionRay = Ray(startPositionBumped, transmittedDirection);
+    refractionRay.insideObjects = insideObjects;
+    return refractionRay.trace(bounces);
 }
 
 Colr Ray::shadow(const Pos point, const LightIO light) const {

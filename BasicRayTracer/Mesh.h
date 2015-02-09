@@ -23,7 +23,8 @@ class Mesh : public Primitive {
 public:
     Mesh(const PolySetIO polySet, const MaterialIO material);
 
-    virtual bool intersect(Ray &ray) const;
+    virtual bool intersect(Ray &ray);
+    virtual bool intersectTriangle(Ray &ray, const Pos v0, const Pos v1, const Pos v2, const Vec3f N);
     Vec3f normal(const PolygonIO polygon) const;
 
 };

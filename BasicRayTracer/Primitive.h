@@ -8,7 +8,7 @@ public:
 
 	Primitive();
 	~Primitive();
-	virtual bool intersect(Ray &ray) const = 0;
+	virtual bool intersect(Ray &ray) = 0;
 };
 
 #endif
