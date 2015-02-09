@@ -76,9 +76,6 @@ void render(void) {
     image.SetSize(IMAGE_WIDTH, IMAGE_HEIGHT);
 	for (int j = 0; j < IMAGE_HEIGHT; j++) {
 		for (int i = 0; i < IMAGE_WIDTH; i++) {
-            if(i == 307 && j == 228){
-                int fesk = 3;
-            }
 			float sx = (i + 1.0 / 2.0) * (1.0 / IMAGE_WIDTH);
 			float sy = (j + 1.0 / 2.0) * (1.0 / IMAGE_HEIGHT);
 			Pos P = M + X*(2.0 * sx - 1.0) + Y * (2.0 * sy - 1.0);
@@ -107,7 +104,7 @@ int main(int argc, char *argv[]) {
 //	Timer total_timer;
 //	total_timer.startTimer();
 
-	loadScene((char *)"../Scenes/test2.ascii");
+	loadScene((char *)"../Scenes/test5.ascii");
 
 	/* write your ray tracer here */
 	render();

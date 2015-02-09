@@ -14,7 +14,7 @@ material(material)
     radius_sq = radius*radius;
 }
 
-void Sphere::intersect(Ray &ray) const{
+bool Sphere::intersect(Ray &ray) const{
     Vec3f L = ray.startPosition - center;
     float a = Vec3f::dot(ray.direction, ray.direction);
     float b = Vec3f::dot(ray.direction, L) * 2;
@@ -23,7 +23,7 @@ void Sphere::intersect(Ray &ray) const{
     float discriminant = b*b - 4 * a * c;
     if (discriminant < 0) {
         // No intersection
-        return;
+        return false;
     }
     float t_min = quadratic_min(a, b, discriminant);
     float t = t_min;
@@ -32,11 +32,12 @@ void Sphere::intersect(Ray &ray) const{
 //    }
     if(t > ray.t_max || t < 0){
         // This ray has already intersected a sphere at a closer point. Ignore this sphere.
-        return;
+        return false;
     }
     ray.t_max = t;
     ray.material = material;
     ray.intersectionNormal = normal(ray.intersectionPoint());
+    return true;
 }
 
 Vec3f Sphere::normal(const Pos point) const{

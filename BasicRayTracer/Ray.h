@@ -25,6 +25,7 @@ public:
     Colr specular(const Pos point) const;
     Colr ambient() const;
     Colr reflection(const Pos point, const int bounces) const;
+    Colr shadow(const Pos point, const Vec3f pointToLight) const;
     float attenuationFactor(const Pos point, const LightIO* light) const;
     Ray(Pos startPosition, Vec3f direction);
 

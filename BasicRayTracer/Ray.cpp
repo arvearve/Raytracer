@@ -53,12 +53,26 @@ Colr Ray::reflection(const Pos point, const int bounces) const {
 
 }
 
+Colr Ray::shadow(const Pos point, const Vec3f pointToLight) const {
+    Colr shadowFactor = Colr(1,1,1);
+//    return shadowFactor;
+    Vec3f directionToLight = Vec3f::normalize(pointToLight);
+    Ray shadowRay = Ray(point, directionToLight);
+    for( auto object : objects){
+        shadowRay.t_max = INFINITY;
+        if(object->intersect(shadowRay)){
+            shadowFactor = Colr(0,0,0);
+        }
+    }
+    return shadowFactor;
+}
+
 Colr Ray::diffuse(const Pos point) const {
     Colr result = Colr(0,0,0);
     for(LightIO* light : lights){
         Vec3f directionToLight = (Vec3f(light->position) - point).normalize();
-        result = result + Colr(material.diffColor) * fmax(0,Vec3f::dot(directionToLight,intersectionNormal));
-        result = result * Colr(light->color) * attenuationFactor(point, light);
+        Colr currentLightContribution = Colr(material.diffColor) * fmax(0,Vec3f::dot(directionToLight,intersectionNormal)) * shadow(point, directionToLight) * Colr(light->color) * attenuationFactor(point, light);
+        result = result + currentLightContribution;
     }
     return result * (1-material.ktran);
 }
@@ -74,7 +88,7 @@ Colr Ray::specular(const Pos point) const {
         Vec3f R = ((Q * 2) - L).normalize();
         float dot = fmax(0,Vec3f::dot(R, V));
         float pow = powf(dot, q);
-        result = result + Ks * pow * Colr(light->color) * attenuationFactor(point, light);
+        result = result + Ks * pow * Colr(light->color) * shadow(point, Q) * attenuationFactor(point, light);
     }
     return result;
 }

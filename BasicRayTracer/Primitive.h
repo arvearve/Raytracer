@@ -8,7 +8,7 @@ public:
 
 	Primitive();
 	~Primitive();
-	virtual void intersect(Ray &ray) const = 0;
+	virtual bool intersect(Ray &ray) const = 0;
     virtual Vec3f normal(const Pos point) const = 0;
 };
 
