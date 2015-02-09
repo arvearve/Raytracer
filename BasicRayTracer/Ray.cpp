@@ -51,10 +51,17 @@ Colr Ray::reflection(const Pos point, const int bounces) const {
 
 }
 
-Colr Ray::shadow(const Pos point, const Vec3f pointToLight) const {
+Colr Ray::shadow(const Pos point, const LightIO light) const {
     Colr shadowFactor = Colr(1,1,1);
-    Vec3f directionToLight = Vec3f::normalize(pointToLight);
-    Ray shadowRay = Ray(point, directionToLight);
+    Vec3f lightVector;
+    if(light.type == POINT_LIGHT){
+        lightVector = Vec3f::normalize(Pos(light.position) - point);
+    }
+    else if(light.type == DIRECTIONAL_LIGHT){
+        lightVector = Vec3f::normalize(Vec3f(light.direction)*-1.0);
+    }
+
+    Ray shadowRay = Ray(point, lightVector);
     for( auto object : objects){
         shadowRay.t_max = INFINITY;
         if(object->intersect(shadowRay)){
@@ -67,8 +74,14 @@ Colr Ray::shadow(const Pos point, const Vec3f pointToLight) const {
 Colr Ray::diffuse(const Pos point) const {
     Colr result = Colr(0,0,0);
     for(LightIO* light : lights){
-        Vec3f directionToLight = (Vec3f(light->position) - point).normalize();
-        Colr currentLightContribution = Colr(material.diffColor) * fmax(0,Vec3f::dot(directionToLight,intersectionNormal)) * shadow(point, directionToLight) * Colr(light->color) * attenuationFactor(point, light);
+
+        Vec3f directionToLight;
+        if(light->type == POINT_LIGHT){
+            directionToLight = (Vec3f(light->position) - point).normalize(); // Vector from the point to the light.
+        } else if (light->type == DIRECTIONAL_LIGHT){
+            directionToLight = (Vec3f(light->direction)*-1.0).normalize();
+        }
+        Colr currentLightContribution = Colr(material.diffColor) * fmax(0,Vec3f::dot(directionToLight,intersectionNormal)) * shadow(point, *light) * Colr(light->color) * attenuationFactor(point, light);
         result = result + currentLightContribution;
     }
     return result * (1-material.ktran);
@@ -76,16 +89,21 @@ Colr Ray::diffuse(const Pos point) const {
 
 Colr Ray::specular(const Pos point) const {
     Colr result = Colr(0,0,0);
-    float q = material.shininess * 20.0;
+    float q = material.shininess * 30.0;
     Colr Ks = Colr(material.specColor);
     Vec3f V = direction*(-1.0); // Incident flipped - ray from point to eye. Normalized.
     for( auto light:lights) {
-        Vec3f L = Vec3f(light->position) - point; // Vector from the point to the light.
+        Vec3f L;
+        if(light->type == POINT_LIGHT){
+            L = (Vec3f(light->position) - point).normalize(); // Vector from the point to the light.
+        } else if (light->type == DIRECTIONAL_LIGHT){
+            L = (Vec3f(light->direction)*-1.0).normalize();
+        }
         Vec3f Q = intersectionNormal * Vec3f::dot(intersectionNormal, L);
-        Vec3f R = ((Q * 2) - L).normalize();
-        float dot = fmax(0,Vec3f::dot(R, V));
+        Vec3f R = ((Q * 2.0) - L).normalize();
+        float dot = fmax(0.0,Vec3f::dot(R, V));
         float pow = powf(dot, q);
-        result = result + Ks * pow * Colr(light->color) * shadow(point, Q) * attenuationFactor(point, light);
+        result = result + Ks * pow * Colr(light->color) * shadow(point, *light) * attenuationFactor(point, light);
     }
     return result;
 }
