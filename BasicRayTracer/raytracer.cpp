@@ -6,6 +6,7 @@
 //#include "Timer.h"
 #include "Vec3f.h"
 #include "Sphere.h"
+#include "Mesh.h"
 #include "EasyBMP.h"
 #include "Ray.h"
 #define IMAGE_WIDTH 500
@@ -35,6 +36,11 @@ static void loadScene(char *name) {
             MaterialIO* material = nextObj->material;
 
             objects.push_back(new Sphere(*sphere, *material));
+        }
+        if( nextObj->type == POLYSET_OBJ){
+            PolySetIO* polyset = (PolySetIO*)nextObj->data;
+            MaterialIO* material = nextObj->material;
+            objects.push_back(new Mesh(*polyset, *material));
         }
         nextObj = nextObj->next;
     }
@@ -80,7 +86,7 @@ void render(void) {
 			float sy = (j + 1.0 / 2.0) * (1.0 / IMAGE_HEIGHT);
 			Pos P = M + X*(2.0 * sx - 1.0) + Y * (2.0 * sy - 1.0);
             Ray ray = Ray(E, P-E);
-            Colr rayColor = ray.trace(3);
+            Colr rayColor = ray.trace(10);
 
             RGBApixel *pixel = image(i, IMAGE_HEIGHT - j - 1);
             pixel->Red = rayColor.x*255;
@@ -104,7 +110,7 @@ int main(int argc, char *argv[]) {
 //	Timer total_timer;
 //	total_timer.startTimer();
 
-	loadScene((char *)"../Scenes/test5.ascii");
+	loadScene((char *)"../Scenes/test3.ascii");
 
 	/* write your ray tracer here */
 	render();

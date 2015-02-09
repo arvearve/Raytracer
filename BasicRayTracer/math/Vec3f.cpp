@@ -29,6 +29,10 @@ RGBApixel Vec3f::toRGBAPixel() const{
     pixel.Alpha = 255;
     return pixel;
 }
+
+float* Vec3f::toArray() const {
+    return new float[3]{x, y, z};
+}
 void Vec3f::capColor(){
     x = fminf(x, 1.0);
     y = fminf(y, 1.0);

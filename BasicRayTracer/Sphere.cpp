@@ -1,11 +1,5 @@
 #include "Sphere.h"
 
-Sphere::Sphere(Pos center, float radius, Colr diffuse)
-:center(center), radius(radius), material(material)
-{
-    radius_sq = radius*radius;
-}
-
 Sphere::Sphere(const SphereIO data, const MaterialIO material):
 center(Pos(data.origin)),
 radius(data.radius),

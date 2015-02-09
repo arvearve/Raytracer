@@ -15,15 +15,6 @@ Pos Ray::intersectionPoint(){
     return startPosition + direction * t_max;
 }
 
-/* Placeholder. Expand to handle transparent objects -> colored shadow.
-   Perhaps merge with trace?
- */
-//bool Ray::shadowTrace(){
-//
-//}
-
-
-
 Colr Ray::trace(int bounces){
     if(bounces <= 0){return Colr(0,0,0);}
 
@@ -37,8 +28,15 @@ Colr Ray::trace(int bounces){
     Colr diffuseColor = diffuse(intersectionPoint());
     Colr ambientColor = ambient();
     Colr specularColor = specular(intersectionPoint());
-    Colr reflectionColor = reflection(intersectionPoint(), bounces-1) * Colr(material.specColor);
-    // Reflection ray
+    Colr reflectionColor;
+    if(material.specColor[0] == 0.0
+       && material.specColor[1] == 0.0
+       && material.specColor[2] == 0.0){
+        reflectionColor = Colr(0,0,0);
+    }
+    else {
+        reflectionColor = reflection(intersectionPoint(), bounces-1) * Colr(material.specColor);
+    }
     Colr result = ambientColor + diffuseColor + specularColor + reflectionColor;
     result.capColor();
     return result;
@@ -55,7 +53,6 @@ Colr Ray::reflection(const Pos point, const int bounces) const {
 
 Colr Ray::shadow(const Pos point, const Vec3f pointToLight) const {
     Colr shadowFactor = Colr(1,1,1);
-//    return shadowFactor;
     Vec3f directionToLight = Vec3f::normalize(pointToLight);
     Ray shadowRay = Ray(point, directionToLight);
     for( auto object : objects){

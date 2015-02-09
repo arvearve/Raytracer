@@ -20,7 +20,7 @@ public:
     Sphere(const SphereIO data, const MaterialIO material);
 
     virtual bool intersect(Ray &ray) const;
-    virtual Vec3f normal(const Pos point) const;
+    Vec3f normal(const Pos point) const;
 };
 
 #endif
