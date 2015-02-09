@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
 //	Timer total_timer;
 //	total_timer.startTimer();
 
-	loadScene((char *)"../Scenes/test2.ascii");
+	loadScene((char *)"../Scenes/test3.ascii");
 
 	/* write your ray tracer here */
 	render();

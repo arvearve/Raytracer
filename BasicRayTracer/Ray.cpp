@@ -65,7 +65,8 @@ Colr Ray::shadow(const Pos point, const LightIO light) const {
     for( auto object : objects){
         shadowRay.t_max = INFINITY;
         if(object->intersect(shadowRay)){
-            shadowFactor = Colr(0,0,0);
+            if(object->material.ktran < 0.001){ return Colr(0,0,0);}
+            shadowFactor = shadowFactor * (Colr(object->material.diffColor).normalize())*object->material.ktran;
         }
     }
     return shadowFactor;
