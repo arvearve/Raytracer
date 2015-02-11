@@ -17,6 +17,7 @@ class Ray
 
 private:
     bool isReflective() const;
+    bool isTransparent() const;
 public:
 	static size_t counter;
 	size_t _id;
@@ -30,16 +31,17 @@ public:
     Vec3f intersectionNormal;
 
     Primitive* currentObject;
-    std::unordered_set<Primitive*> insideObjects;
-
-
+    
     Pos intersectionPoint() const;
+    Colr trace(int bounces, std::unordered_set<Primitive*> insideObjects);
     Colr trace(int bounces);
     Colr diffuse(const LightIO* light) const;
     Colr specular(const LightIO* light) const;
     Colr ambient() const;
-    Colr reflection(const Pos point, const int bounces) const;
-    Colr refraction(const Pos point, const int bounces);
+
+    Colr reflection(const Pos point, const int bounces, std::unordered_set<Primitive*> mySet) const;
+    Colr refraction(const Pos point, const int bounces, const float ior_a, const float ior_b, std::unordered_set<Primitive*> mySet, std::unordered_set<Primitive*> oldSet);
+
     Colr shadow(const LightIO* light) const;
     float attenuationFactor(const Pos point, const LightIO* light) const;
     Ray(Pos startPosition, Vec3f direction);

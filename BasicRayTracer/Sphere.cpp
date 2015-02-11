@@ -21,9 +21,6 @@ bool Sphere::intersect(Ray &ray) {
     }
     float t_min = quadratic_min(a, b, discriminant);
     float t = t_min;
-//    if(t < 0){
-//        t = quadratic_max(a, b, discriminant);
-//    }
     if(t > ray.t_max || t < 0){
         // This ray has already intersected a sphere at a closer point. Ignore this sphere.
         return false;
