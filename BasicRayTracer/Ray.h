@@ -16,7 +16,7 @@ class Ray
 {
 
 private:
-    bool isReflective(MaterialIO material);
+    bool isReflective() const;
 public:
 	static size_t counter;
 	size_t _id;
@@ -32,14 +32,15 @@ public:
     Primitive* currentObject;
     std::unordered_set<Primitive*> insideObjects;
 
-    Pos intersectionPoint();
+
+    Pos intersectionPoint() const;
     Colr trace(int bounces);
-    Colr diffuse(const Pos point) const;
-    Colr specular(const Pos point) const;
+    Colr diffuse(const LightIO* light) const;
+    Colr specular(const LightIO* light) const;
     Colr ambient() const;
     Colr reflection(const Pos point, const int bounces) const;
-    Colr refraction(const Pos point, const int bounces, float n1, float n2);
-    Colr shadow(const Pos point, const LightIO light) const;
+    Colr refraction(const Pos point, const int bounces);
+    Colr shadow(const LightIO* light) const;
     float attenuationFactor(const Pos point, const LightIO* light) const;
     Ray(Pos startPosition, Vec3f direction);
 

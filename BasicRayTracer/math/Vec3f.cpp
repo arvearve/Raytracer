@@ -68,6 +68,12 @@ Vec3f Vec3f::operator+(const Vec3f &other) const{
     return Vec3f(x+other.x, y+other.y, z+other.z);
 }
 
+Vec3f Vec3f::operator+=(const Vec3f &other){
+    x += other.x, y+= other.y, z += other.z;
+    return *this;
+}
+
+
 Vec3f Vec3f::operator-(const Vec3f &other) const{
     return Vec3f(x-other.x, y-other.y, z-other.z);
 }

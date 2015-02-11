@@ -9,8 +9,8 @@
 #include "Mesh.h"
 #include "EasyBMP.h"
 #include "Ray.h"
-#define IMAGE_WIDTH 500
-#define IMAGE_HEIGHT 500
+#define IMAGE_WIDTH 400
+#define IMAGE_HEIGHT 400
 #define MAX_BOUNCES	10
 
 typedef unsigned char u08;
@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
 //	Timer total_timer;
 //	total_timer.startTimer();
 
-	loadScene((char *)"../Scenes/test5.ascii");
+	loadScene((char *)"../Scenes/test1.ascii");
 
 	/* write your ray tracer here */
 	render();

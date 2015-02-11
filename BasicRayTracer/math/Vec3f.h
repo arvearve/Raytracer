@@ -31,6 +31,7 @@ public:
     static Vec3f normalize(const Vec3f &v);
 
     Vec3f operator+(const Vec3f &other) const;
+    Vec3f operator+=(const Vec3f &other);
     Vec3f operator-(const Vec3f &other) const;
     Vec3f operator*(const Vec3f &other);
     Vec3f operator*(const float scale) const;
