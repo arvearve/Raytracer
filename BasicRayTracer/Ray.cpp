@@ -68,7 +68,7 @@ Colr Ray::trace(int bounces, std::unordered_set<Primitive*> insideObjects){
             mySet.erase(currentObject);
         }
         float ior_a = isInside ? IOR_GLASS : IOR_AIR;
-        float ior_b = mySet.size() > 0 ? IOR_GLASS : IOR_AIR;
+        float ior_b = mySet.size() != 0 ? IOR_GLASS : IOR_AIR;
         refractionColor = refraction(intersectionPoint(), bounces-1, ior_a, ior_b, mySet, insideObjects);
     }
 
@@ -87,7 +87,7 @@ bool Ray::isTransparent() const {
     return material.ktran >= 0.001;
 }
 
-Colr Ray::reflection(const Pos point, const int bounces, std::unordered_set<Primitive*> mySet) const {
+Colr Ray::reflection(const Pos point, const int bounces, const std::unordered_set<Primitive*> mySet) const {
     Vec3f incident = Vec3f::normalize(direction);
     double cosI = -Vec3f::dot(intersectionNormal, incident);
     Vec3f reflectedDirection =  incident + intersectionNormal * cosI * 2;
@@ -97,22 +97,24 @@ Colr Ray::reflection(const Pos point, const int bounces, std::unordered_set<Prim
 
 }
 
-Colr Ray::refraction(const Pos point, const int bounces, const float ior_a, const float ior_b, std::unordered_set<Primitive*> mySet, std::unordered_set<Primitive*> oldSet){
-    // Adapted from http://steve.hollasch.net/cgindex/render/refraction.txt
-    // ior_a, ior_b are incoming and transmitted index of refraction
-    Vec3f incident = direction;
-    float n = ior_a/ior_b;
-    float cosI = -Vec3f::dot(intersectionNormal, incident);
-    float sinT2 = n*n*(1.0- cosI * cosI);
-    if(sinT2 >= 1.0) {
-        return reflection(point - (intersectionNormal * BUMP_EPSILON), bounces-1, oldSet);
-    }
-    float cosT = sqrtf(1.0 - sinT2);
+Colr Ray::refraction(const Pos point, const int bounces, const float ior_a, const float ior_b, const std::unordered_set<Primitive*> mySet, const std::unordered_set<Primitive*> oldSet){
+    Vec3f incident = direction * -1.0;
+    float n = ior_b / ior_a;
+    float cosThetaI = Vec3f::dot(incident, intersectionNormal);
+    float thetaI = acos(cosThetaI);
+    float sinThetaT = (ior_a/ior_b) * sin(thetaI);
+    float thetaT = asin(sinThetaT);
+    float cosThetaT = cos(thetaT);
 
-    Vec3f transmittedDirection = (incident * n) + intersectionNormal * (n * cosI - cosT);
-    Pos startPositionBumped = point - (intersectionNormal * BUMP_EPSILON);
-    Ray refractionRay = Ray(startPositionBumped, transmittedDirection);
-    return refractionRay.trace(bounces-1, mySet) * material.ktran;
+    Vec3f newDirection = incident * -(1.0/n) - intersectionNormal * (cosThetaT - (1.0/n) * cosThetaI);
+
+    if (thetaI >= asin(ior_b/ior_a)) {
+        return Ray(intersectionPoint()+intersectionNormal*BUMP_EPSILON, newDirection).trace(bounces-1, oldSet);
+    }
+    else{
+        return Ray(intersectionPoint() - intersectionNormal * BUMP_EPSILON, newDirection).trace(bounces-1, mySet) * material.ktran;
+    }
+
 }
 
 

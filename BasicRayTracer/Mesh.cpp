@@ -68,6 +68,7 @@ bool Mesh::intersect(Ray &ray){
 
         if (r < ray.t_max)
         {
+            ray.currentObject = this;
             ray.t_max= r;
             ray.intersectionNormal = Vec3f::normalize(N);
             ray.material = material;

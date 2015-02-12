@@ -86,9 +86,6 @@ void render(void) {
 			float sy = (j + 1.0 / 2.0) * (1.0 / IMAGE_HEIGHT);
 			Pos P = M + X*(2.0 * sx - 1.0) + Y * (2.0 * sy - 1.0);
             Ray ray = Ray(E, P-E);
-            if(j == 96 && i == 208){
-                int fesk = 3;
-            }
             Colr rayColor = ray.trace(10);
 
             RGBApixel *pixel = image(i, IMAGE_HEIGHT - j - 1);
@@ -113,7 +110,7 @@ int main(int argc, char *argv[]) {
 //	Timer total_timer;
 //	total_timer.startTimer();
 
-	loadScene((char *)"../Scenes/test5.ascii");
+	loadScene((char *)"../Scenes/test3.ascii");
 
 	/* write your ray tracer here */
 	render();
