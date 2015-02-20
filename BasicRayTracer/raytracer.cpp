@@ -9,9 +9,9 @@
 #include "Mesh.h"
 #include "EasyBMP.h"
 #include "Ray.h"
-#define IMAGE_WIDTH 400
-#define IMAGE_HEIGHT 400
-#define MAX_BOUNCES	20
+#define IMAGE_WIDTH 1500
+#define IMAGE_HEIGHT 1500
+#define MAX_BOUNCES	10
 
 typedef unsigned char u08;
 
@@ -98,7 +98,7 @@ void render(void) {
 
 	/* save out the image */
 //	image.Save(_T("raytraced.png"), Gdiplus::ImageFormatPNG);
-    image.WriteToFile("raytraced.bmp");
+    image.WriteToFile("raytraced2.bmp");
     /* cleanup */
 
 	return;
@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
 //	Timer total_timer;
 //	total_timer.startTimer();
 
-	loadScene((char *)"../Scenes/test3.ascii");
+	loadScene((char *)"../Scenes/test5.ascii");
 
 	/* write your ray tracer here */
 	render();

@@ -65,7 +65,6 @@ bool Mesh::intersect(Ray &ray){
         }
 
         // hit found
-
         if (r < ray.t_max)
         {
             ray.currentObject = this;

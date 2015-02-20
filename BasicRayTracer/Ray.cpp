@@ -80,11 +80,11 @@ Colr Ray::trace(int bounces, std::unordered_set<Primitive*> insideObjects){
 bool Ray::isReflective() const {
     return (material.specColor[0] > 0.0
             || material.specColor[1] > 0.0
-            || material.specColor[2] > 0.0);
+            || material.specColor[2] > 0.0) && t_max < INFINITY;
 }
 
 bool Ray::isTransparent() const {
-    return material.ktran >= 0.001;
+    return material.ktran >= 0.001 && t_max < INFINITY;
 }
 
 Colr Ray::reflection(const Pos point, const int bounces, const std::unordered_set<Primitive*> mySet) const {
