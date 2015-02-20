@@ -25,22 +25,63 @@ public:
     Vec3f():x(0),y(0),z(0){}
     Vec3f(float x, float y, float z): x(x), y(y),z(z){}
     Vec3f(const float color[3]):x(color[0]), y(color[1]), z(color[2]){}
-    float length(void) const;
-    Vec3f& normalize();
+    inline float length(void) const{
+        float lengthSq = x*x + y*y + z*z;
+        return std::sqrt(lengthSq);
+    };
+    inline Vec3f& normalize(){
+        float length = this->length();
+        x = x / length;
+        y = y / length;
+        z = z / length;
+        return *this;
+    };
     Vec3f& normalizeColor();
     RGBApixel toRGBAPixel() const;
     Colr capColor();
     float* toArray() const;
-    static float dot(const Vec3f &a, const Vec3f &b);
-    static Vec3f cross(const Vec3f &a, const Vec3f &b);
-    static float angle(const Vec3f &a, const Vec3f &b);
-    static Vec3f normalize(const Vec3f &v);
+    static inline float dot(const Vec3f &a, const Vec3f &b){
+        return  (a.x * b.x
+                 + a.y * b.y
+                 + a.z * b.z);
 
-    Vec3f operator+(const Vec3f &other) const;
-    Vec3f operator+=(const Vec3f &other);
-    Vec3f operator-(const Vec3f &other) const;
-    Vec3f operator*(const Vec3f &other);
-    Vec3f operator*(const float scale) const;
+    };
+    static inline Vec3f cross(const Vec3f &a, const Vec3f &b){
+        return Vec3f(a.y*b.z - a.z*b.y,
+                     a.z*b.x - a.x*b.z,
+                     a.x*b.y - a.y*b.x);
+    };
+
+    static inline float angle(const Vec3f &a, const Vec3f &b){
+        return acos(dot(a,b) / (a.length() * b.length()));
+    };
+
+    static Vec3f normalize(const Vec3f &v){
+        float length = v.length();
+        Vec3f result = Vec3f(v.x/length, v.y/length, v.z/length);
+        return result;
+    };
+
+    inline Vec3f operator+(const Vec3f &other) const{
+        return Vec3f(x+other.x, y+other.y, z+other.z);
+    };
+    inline Vec3f operator-(const Vec3f &other) const{
+        return Vec3f(x-other.x, y-other.y, z-other.z);
+    };
+
+    inline Vec3f operator+=(const Vec3f &other){
+        x += other.x, y+= other.y, z += other.z;
+        return *this;
+    };
+
+    inline Vec3f operator*(const Vec3f &other){
+        return Vec3f(x*other.x, y*other.y, z*other.z);
+    };
+
+    inline Vec3f operator*(const float scale) const{
+        return Vec3f(x*scale, y*scale, z*scale);
+    };
+
     friend std::ostream& operator<<(std::ostream&, const Vec3f &vec);
     
 };

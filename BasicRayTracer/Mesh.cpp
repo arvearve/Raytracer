@@ -52,8 +52,12 @@ bool Mesh::intersect(Ray &ray){
         if (r <= 0.00001) { continue; }
 
         // Intersection point with Plane
-        Pos intersectionPoint = ray.startPosition + ray.direction * r;
-        Vec3f w = intersectionPoint - Vec3f(vertices[offset].pos);
+        Pos intersectionPoint = Pos(ray.startPosition.x + ray.direction.x * r,
+                                    ray.startPosition.y + ray.direction.y * r,
+                                    ray.startPosition.z + ray.direction.z * r);
+        Vec3f w = Vec3f(intersectionPoint.x - vertices[offset].pos[0],
+                        intersectionPoint.y - vertices[offset].pos[1],
+                        intersectionPoint.z - vertices[offset].pos[2]);
 //        Vec3f w = intersectionPoint - v0;
         // Now test if we hit inside the triangle
         float uu = Vec3f::dot(u, u);
