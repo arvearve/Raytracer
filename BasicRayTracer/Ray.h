@@ -35,14 +35,14 @@ public:
     Pos intersectionPoint() const;
     Colr trace(int bounces, std::unordered_set<Primitive*> insideObjects);
     Colr trace(int bounces);
-    Colr diffuse(const LightIO* light) const;
-    Colr specular(const LightIO* light) const;
+    Colr diffuse(const Vec3f &L, Colr &color) const;
+    Colr specular(const Vec3f &L, Colr &color) const;
     Colr ambient() const;
 
     Colr reflection(const Pos point, const int bounces, std::unordered_set<Primitive*> mySet) const;
     Colr refraction(const Pos point, const int bounces, const float ior_a, const float ior_b, std::unordered_set<Primitive*> mySet, std::unordered_set<Primitive*> oldSet);
 
-    Colr shadow(const LightIO* light) const;
+    Colr shadow(const Vec3f &L, const float lightDistance) const;
     float attenuationFactor(const Pos point, const LightIO* light) const;
     Ray(Pos startPosition, Vec3f direction);
 

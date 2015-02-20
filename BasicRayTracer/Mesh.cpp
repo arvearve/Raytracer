@@ -28,16 +28,23 @@ Mesh::Mesh(const PolySetIO polySet, const MaterialIO material):material(material
 bool Mesh::intersect(Ray &ray){
     for (int i = 0; i < triangleCount ; i++) {
         int offset = i * 3;
-        Pos v0 = Pos(vertices[offset].pos);
-        Pos v1 = Pos(vertices[offset+1].pos);
-        Pos v2 = Pos(vertices[offset+2].pos);
 
         Vec3f N = normals[i];
-        Vec3f u = v1 - v0;
-        Vec3f v = v2 - v0;
+        Vec3f v0_Origin = Vec3f(vertices[offset].pos[0] - ray.startPosition.x,
+                                vertices[offset].pos[1] - ray.startPosition.y,
+                                vertices[offset].pos[2] - ray.startPosition.z);
+        // u = v1 - v0
+        Vec3f u = Vec3f(vertices[offset+1].pos[0] - vertices[offset].pos[0],
+                        vertices[offset+1].pos[1] - vertices[offset].pos[1],
+                        vertices[offset+1].pos[2] - vertices[offset].pos[2]);
+
+        // v = v2 - v0;
+        Vec3f v = Vec3f(vertices[offset+2].pos[0] - vertices[offset].pos[0],
+                        vertices[offset+2].pos[1] - vertices[offset].pos[1],
+                        vertices[offset+2].pos[2] - vertices[offset].pos[2]);
 
         // plane intersect
-        float r1 = Vec3f::dot(N, v0 - ray.startPosition);
+        float r1 = Vec3f::dot(N, v0_Origin);
         float r2 = Vec3f::dot(N, ray.direction);
 
         if (fabs(r2) < 0.0000001) { continue; }
@@ -46,7 +53,8 @@ bool Mesh::intersect(Ray &ray){
 
         // Intersection point with Plane
         Pos intersectionPoint = ray.startPosition + ray.direction * r;
-        Vec3f w = intersectionPoint - v0;
+        Vec3f w = intersectionPoint - Vec3f(vertices[offset].pos);
+//        Vec3f w = intersectionPoint - v0;
         // Now test if we hit inside the triangle
         float uu = Vec3f::dot(u, u);
         float uv = Vec3f::dot(u, v);
@@ -58,15 +66,14 @@ bool Mesh::intersect(Ray &ray){
         float s = (uv*vw - vv*uw) / denom;
         float t = (uv*uw - uu*vw) / denom;
 
-        // triangel test
+        // triangle test
         if (s < 0.0f || t < 0.0f || s + t > 1.0f)
         {
             continue;
         }
 
         // hit found
-        if (r < ray.t_max)
-        {
+        if (r < ray.t_max) {
             ray.currentObject = this;
             ray.t_max= r;
             ray.intersectionNormal = Vec3f::normalize(N);

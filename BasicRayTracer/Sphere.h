@@ -14,7 +14,6 @@ private:
     float quadratic_max(const float a, const float b, const float discriminant) const;
 
 public:
-
     MaterialIO material;
 	Sphere(Pos center, float radius, Colr diffuse);
     Sphere(const SphereIO data, const MaterialIO material);

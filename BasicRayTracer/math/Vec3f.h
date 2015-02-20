@@ -14,7 +14,12 @@
 #include <stdio.h>
 #include "EasyBMP.h"
 
-class Vec3f {
+class Vec3f;
+
+typedef Vec3f Colr;
+typedef Vec3f Pos;
+
+class Vec3f{
 public:
     float x, y, z;
     Vec3f():x(0),y(0),z(0){}
@@ -22,8 +27,9 @@ public:
     Vec3f(const float color[3]):x(color[0]), y(color[1]), z(color[2]){}
     float length(void) const;
     Vec3f& normalize();
+    Vec3f& normalizeColor();
     RGBApixel toRGBAPixel() const;
-    void capColor();
+    Colr capColor();
     float* toArray() const;
     static float dot(const Vec3f &a, const Vec3f &b);
     static Vec3f cross(const Vec3f &a, const Vec3f &b);
@@ -38,6 +44,4 @@ public:
     friend std::ostream& operator<<(std::ostream&, const Vec3f &vec);
     
 };
-typedef Vec3f Colr;
-typedef Vec3f Pos;
 #endif /* defined(__reyes__Vec3f__) */

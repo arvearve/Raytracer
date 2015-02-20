@@ -4,8 +4,6 @@
 #include "Ray.h"
 class Primitive {
 public:
-    MaterialIO material;
-
 	Primitive();
 	~Primitive();
 	virtual bool intersect(Ray &ray) = 0;

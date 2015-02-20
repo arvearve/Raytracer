@@ -21,6 +21,14 @@ Vec3f & Vec3f::normalize(){
 	return *this;
 }
 
+Vec3f & Vec3f::normalizeColor(){
+    float div = fmaxf(x, fmaxf(y, z));
+    x = x/div;
+    y = y/div;
+    z = z/div;
+    return *this;
+}
+
 RGBApixel Vec3f::toRGBAPixel() const{
     RGBApixel pixel;
     pixel.Red = (int)x;
@@ -33,10 +41,12 @@ RGBApixel Vec3f::toRGBAPixel() const{
 float* Vec3f::toArray() const {
     return new float[3]{x, y, z};
 }
-void Vec3f::capColor(){
+
+Colr Vec3f::capColor(){
     x = fminf(x, 1.0);
     y = fminf(y, 1.0);
     z = fminf(z, 1.0);
+    return *this;
 }
 
 float Vec3f::length(void) const {
@@ -68,15 +78,17 @@ Vec3f Vec3f::operator+(const Vec3f &other) const{
     return Vec3f(x+other.x, y+other.y, z+other.z);
 }
 
+
+Vec3f Vec3f::operator-(const Vec3f &other) const{
+    return Vec3f(x-other.x, y-other.y, z-other.z);
+}
+
 Vec3f Vec3f::operator+=(const Vec3f &other){
     x += other.x, y+= other.y, z += other.z;
     return *this;
 }
 
 
-Vec3f Vec3f::operator-(const Vec3f &other) const{
-    return Vec3f(x-other.x, y-other.y, z-other.z);
-}
 
 Vec3f Vec3f::operator*(const Vec3f &other){
     return Vec3f(x*other.x, y*other.y, z*other.z);
