@@ -9,8 +9,8 @@
 #include "Mesh.h"
 #include "EasyBMP.h"
 #include "Ray.h"
-#define IMAGE_WIDTH 1500
-#define IMAGE_HEIGHT 1500
+#define IMAGE_WIDTH 256
+#define IMAGE_HEIGHT 256
 #define MAX_BOUNCES	10
 
 typedef unsigned char u08;
@@ -34,13 +34,12 @@ static void loadScene(char *name) {
         if (nextObj->type == SPHERE_OBJ) {
             SphereIO* sphere = (SphereIO*)nextObj->data;
             MaterialIO* material = nextObj->material;
-
             objects.push_back(new Sphere(*sphere, *material));
         }
         if( nextObj->type == POLYSET_OBJ){
             PolySetIO* polyset = (PolySetIO*)nextObj->data;
             MaterialIO* material = nextObj->material;
-            objects.push_back(new Mesh(*polyset, *material));
+            objects.push_back(new Mesh(*polyset, material, nextObj->numMaterials));
         }
         nextObj = nextObj->next;
     }
@@ -81,6 +80,7 @@ void render(void) {
     image.SetBitDepth(24);
     image.SetSize(IMAGE_WIDTH, IMAGE_HEIGHT);
 	for (int j = 0; j < IMAGE_HEIGHT; j++) {
+        std::cout  << "Rendering: " << j << "/" << IMAGE_HEIGHT << std::endl;
 		for (int i = 0; i < IMAGE_WIDTH; i++) {
 			float sx = (i + 1.0 / 2.0) * (1.0 / IMAGE_WIDTH);
 			float sy = (j + 1.0 / 2.0) * (1.0 / IMAGE_HEIGHT);
@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
 //	Timer total_timer;
 //	total_timer.startTimer();
 
-	loadScene((char *)"../Scenes/test5.ascii");
+	loadScene((char *)"../Scenes2/test1.ascii");
 
 	/* write your ray tracer here */
 	render();

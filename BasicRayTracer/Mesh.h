@@ -15,13 +15,19 @@
 #include "scene_io.h"
 
 class Mesh : public Primitive {
-    std::vector<VertexIO> vertices;
+    std::vector<PolygonIO> polygons;
     std::vector<Vec3f> normals;
-    MaterialIO material;
+    std::vector<MaterialIO> materials;
     long triangleCount;
-    bool intersectPolygon(const PolygonIO polygon, Ray& ray) const;
+    MaterialBinding materialBinding;
+    NormType normType;
+
+
+    MaterialIO interpolate(const float u,const float v,const VertexIO &v1, const VertexIO &v2, const VertexIO &v3) const;
+    Vec3f interpNormals(const float u, const float v, const VertexIO &v0, const VertexIO &v1, const VertexIO &v2) const;
+
 public:
-    Mesh(const PolySetIO polySet, const MaterialIO material);
+    Mesh(const PolySetIO polySet, const MaterialIO* materials, const long materialCount);
 
     virtual bool intersect(Ray &ray);
     Vec3f normal(const PolygonIO polygon) const;
