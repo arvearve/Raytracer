@@ -97,7 +97,8 @@ bool Mesh::intersect(Ray &ray){
         if (r < ray.t_max) {
             ray.currentObject = this;
             ray.t_max= r;
-
+            ray.u = s;
+            ray.v = t;
             if(normType == PER_VERTEX_NORMAL){
                 ray.intersectionNormal = interpNormals(s, t, v0, v1, v2);
             } else {

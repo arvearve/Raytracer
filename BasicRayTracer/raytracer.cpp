@@ -80,7 +80,7 @@ void render(void) {
     image.SetBitDepth(24);
     image.SetSize(IMAGE_WIDTH, IMAGE_HEIGHT);
 	for (int j = 0; j < IMAGE_HEIGHT; j++) {
-        std::cout  << "Rendering: " << j << "/" << IMAGE_HEIGHT << std::endl;
+//        std::cout  << "Rendering: " << j << "/" << IMAGE_HEIGHT << std::endl;
 		for (int i = 0; i < IMAGE_WIDTH; i++) {
 			float sx = (i + 1.0 / 2.0) * (1.0 / IMAGE_WIDTH);
 			float sy = (j + 1.0 / 2.0) * (1.0 / IMAGE_HEIGHT);
@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
 //	Timer total_timer;
 //	total_timer.startTimer();
 
-	loadScene((char *)"../Scenes2/test1.ascii");
+	loadScene((char *)"../Scenes/test1.ascii");
 
 	/* write your ray tracer here */
 	render();

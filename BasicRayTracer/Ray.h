@@ -27,6 +27,8 @@ public:
 
     Colr color;
     float t_max;
+    float u;
+    float v;
     MaterialIO material;
     Vec3f intersectionNormal;
 
