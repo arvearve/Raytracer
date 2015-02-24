@@ -9,8 +9,8 @@
 #include "Mesh.h"
 #include "EasyBMP.h"
 #include "Ray.h"
-#define IMAGE_WIDTH 256
-#define IMAGE_HEIGHT 256
+#define IMAGE_WIDTH 512
+#define IMAGE_HEIGHT 512
 #define MAX_BOUNCES	10
 
 typedef unsigned char u08;
@@ -20,8 +20,8 @@ std::vector<LightIO*> lights;
 std::vector<Primitive*> objects;
 
 #pragma mark - Shaders
-void mirror(Ray &ray);
-void CHECKERBOARD(Ray &ray);
+void mirror(Ray &ray, const bool on);
+bool CHECKERBOARD(const float u, const float v);
 
 void defaultShader(Ray &ray){
     if (ray.currentObject->name == NULL) {
@@ -31,7 +31,7 @@ void defaultShader(Ray &ray){
         int shader = atoi(ray.currentObject->name);
         switch (shader) {
             case 1:
-                CHECKERBOARD(ray);
+                mirror(ray, CHECKERBOARD(ray.u, ray.v));
                 break;
             default:
                 break;
@@ -40,24 +40,20 @@ void defaultShader(Ray &ray){
 };
 
 
-void CHECKERBOARD(Ray &ray){
-    int CHECK_SIZE_X = 40;
-    int CHECK_SIZE_Y = 40;
+bool CHECKERBOARD(const float u, const float v){
+    int CHECK_SIZE_X = 5;
+    int CHECK_SIZE_Y = 5;
     float xbase = 1.0 / CHECK_SIZE_X;
     float ybase = 1.0 / CHECK_SIZE_Y;
-    float x = fmod(ray.u, 2.0/CHECK_SIZE_X);
-    float y = fmod(ray.v, 2.0/CHECK_SIZE_Y);
-    if ((x > xbase && y < ybase )|| (x < xbase  && y > ybase)){
-        mirror(ray);
-    }
-    else{
-        return;
-    }
+    float x = fmod(u, 2.0/CHECK_SIZE_X);
+    float y = fmod(v, 2.0/CHECK_SIZE_Y);
+    return ((x > xbase && y < ybase )|| (x < xbase  && y > ybase));
 }
 
 
 
-void mirror(Ray &ray){
+void mirror(Ray &ray, bool on){
+    if (!on){ return; }
     ray.material.specColor[0] = 1;
     ray.material.specColor[1] = 1;
     ray.material.specColor[2] = 1;
@@ -169,7 +165,7 @@ int main(int argc, char *argv[]) {
 //	Timer total_timer;
 //	total_timer.startTimer();
 
-	loadScene((char *)"../Scenes2/test1.ascii");
+	loadScene((char *)"../Scenes2/shader1.ascii");
 
 	/* write your ray tracer here */
 	render();

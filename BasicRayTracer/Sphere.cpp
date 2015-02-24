@@ -1,5 +1,5 @@
 #include "Sphere.h"
-
+extern bool CHECKERBOARD(const float u, const float v);
 Sphere::Sphere(const SphereIO data, const MaterialIO material, char* _name):
 center(Pos(data.origin)),
 radius(data.radius),
@@ -24,17 +24,31 @@ bool Sphere::intersect(Ray &ray) {
         return false;
     }
     float t_min = quadratic_min(a, b, discriminant);
+    float t_max = quadratic_max(a, b, discriminant);
     float t = t_min;
     if(t > ray.t_max || t < 0){
         // This ray has already intersected another primitive at a closer point. Ignore this sphere.
         return false;
     }
+    Vec3f intersectionNormal = normal(ray.startPosition + ray.direction * t);
+    float u, v;
+    uv(intersectionNormal, u, v);
+    if(atoi(name)/10 == 1){
+        if(!CHECKERBOARD(u, v)){
+            return false;
+        }
+    }
 
     ray.currentObject = this;
-    ray.t_max = t;
+    ray.t_max = t_min;
     ray.material = material;
-    ray.intersectionNormal = normal(ray.intersectionPoint());
-    uv(ray.intersectionNormal, ray.u, ray.v);
+    ray.intersectionNormal = intersectionNormal;
+    ray.u = u;
+    ray.v = v;
+
+    /* Intersection shader: If object name is digit: The first digit decides which intersection shader to turn on
+    Names starting with 1x are checker intersection.
+     */
     return true;
 }
 
