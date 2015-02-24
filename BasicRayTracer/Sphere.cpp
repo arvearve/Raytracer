@@ -1,6 +1,6 @@
 #include "Sphere.h"
 
-Sphere::Sphere(const SphereIO data, const MaterialIO material):
+Sphere::Sphere(const SphereIO data, const MaterialIO material, char* _name):
 center(Pos(data.origin)),
 radius(data.radius),
 xAxis(Vec3f(data.xaxis).normalize()),
@@ -8,6 +8,7 @@ yAxis(Vec3f(data.yaxis).normalize()),
 zAxis(Vec3f(data.zaxis).normalize()),
 material(material)
 {
+    name = _name;
     radius_sq = radius*radius;
 }
 

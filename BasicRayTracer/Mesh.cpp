@@ -10,7 +10,6 @@
 #define EPSILON 0.0001f
 Mesh::Mesh(const PolySetIO polySet, const MaterialIO* materials, const long numMaterials): materials(materials, materials + numMaterials), triangleCount(polySet.numPolys){
     if(polySet.type != POLYSET_TRI_MESH){ std::cout << "Unimplemented polyset type: " << polySet.type << std::endl; }
-    if(polySet.materialBinding != PER_OBJECT_MATERIAL){ std::cout << "Unimplemented material binding: " << polySet.materialBinding << std::endl; }
     float numPolys = polySet.numPolys;
 
     for(int i = 0; i < numPolys; i++){
@@ -20,24 +19,6 @@ Mesh::Mesh(const PolySetIO polySet, const MaterialIO* materials, const long numM
         normType = polySet.normType;
         materialBinding = polySet.materialBinding;
         polygons.push_back(polygon);
-        /*
-        if(polySet.normType == PER_FACE_NORMAL) {
-            // If each vertex doesn't have a normal assigned, just use the face normal.
-            polygon.vert[0].norm[0] = N.x;
-            polygon.vert[0].norm[1] = N.y;
-            polygon.vert[0].norm[2] = N.z;
-
-            polygon.vert[1].norm[0] = N.x;
-            polygon.vert[1].norm[1] = N.y;
-            polygon.vert[1].norm[2] = N.z;
-
-            polygon.vert[2].norm[0] = N.x;
-            polygon.vert[2].norm[1] = N.y;
-            polygon.vert[2].norm[2] = N.z;
-        }
-
-        */
-
     }
 }
 

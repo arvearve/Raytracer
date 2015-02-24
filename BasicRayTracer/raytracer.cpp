@@ -19,6 +19,65 @@ SceneIO *scene = NULL;
 std::vector<LightIO*> lights;
 std::vector<Primitive*> objects;
 
+#pragma mark - Shaders
+void mirror(Ray &ray);
+void CHECKERBOARD(Ray &ray);
+
+void defaultShader(Ray &ray){
+    if (ray.currentObject->name == NULL) {
+        return;
+    }
+    else {
+        int shader = atoi(ray.currentObject->name);
+        switch (shader) {
+            case 1:
+                CHECKERBOARD(ray);
+                break;
+            default:
+                break;
+        }
+    }
+};
+
+
+void CHECKERBOARD(Ray &ray){
+    int CHECK_SIZE_X = 40;
+    int CHECK_SIZE_Y = 40;
+    float xbase = 1.0 / CHECK_SIZE_X;
+    float ybase = 1.0 / CHECK_SIZE_Y;
+    float x = fmod(ray.u, 2.0/CHECK_SIZE_X);
+    float y = fmod(ray.v, 2.0/CHECK_SIZE_Y);
+    if ((x > xbase && y < ybase )|| (x < xbase  && y > ybase)){
+        mirror(ray);
+    }
+    else{
+        return;
+    }
+}
+
+
+
+void mirror(Ray &ray){
+    ray.material.specColor[0] = 1;
+    ray.material.specColor[1] = 1;
+    ray.material.specColor[2] = 1;
+
+    ray.material.diffColor[0] = 0;
+    ray.material.diffColor[1] = 0;
+    ray.material.diffColor[2] = 0;
+
+    ray.material.ambColor[0] = 0;
+    ray.material.ambColor[1] = 0;
+    ray.material.ambColor[2] = 0;
+
+    ray.material.emissColor[0] = 0;
+    ray.material.emissColor[1] = 0;
+    ray.material.emissColor[2] = 0;
+
+    ray.material.shininess = 3;
+    ray.material.ktran = 0;
+}
+
 
 static void loadScene(char *name) {
 	/* load the scene into the SceneIO data structure using given parsing code */
@@ -34,7 +93,7 @@ static void loadScene(char *name) {
         if (nextObj->type == SPHERE_OBJ) {
             SphereIO* sphere = (SphereIO*)nextObj->data;
             MaterialIO* material = nextObj->material;
-            objects.push_back(new Sphere(*sphere, *material));
+            objects.push_back(new Sphere(*sphere, *material, nextObj->name));
         }
         if( nextObj->type == POLYSET_OBJ){
             PolySetIO* polyset = (PolySetIO*)nextObj->data;
@@ -110,7 +169,7 @@ int main(int argc, char *argv[]) {
 //	Timer total_timer;
 //	total_timer.startTimer();
 
-	loadScene((char *)"../Scenes/test1.ascii");
+	loadScene((char *)"../Scenes2/test1.ascii");
 
 	/* write your ray tracer here */
 	render();

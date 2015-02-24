@@ -20,8 +20,7 @@ private:
     void uv(const Vec3f &normal, float &u, float &v) const;
 public:
     MaterialIO material;
-	Sphere(Pos center, float radius, Colr diffuse);
-    Sphere(const SphereIO data, const MaterialIO material);
+    Sphere(const SphereIO data, const MaterialIO material, char* _name);
 
     virtual bool intersect(Ray &ray);
     Vec3f normal(const Pos point) const;

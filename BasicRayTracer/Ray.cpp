@@ -1,5 +1,6 @@
 #include "Ray.h"
 #include "Sphere.h"
+extern void defaultShader(Ray &ray);
 extern SceneIO *scene;
 extern std::vector<Primitive*> objects;
 extern std::vector<LightIO*> lights;
@@ -7,6 +8,7 @@ size_t Ray::counter = 0;
 Ray::Ray(Pos startPosition, Vec3f direction)
 :_id(++counter), startPosition(startPosition), direction(direction.normalize())
 {
+    surfaceShader = defaultShader;
     t_max = INFINITY;
     color = BACKGROUND_COLOR;
 }
@@ -28,6 +30,9 @@ Colr Ray::trace(int bounces, std::unordered_set<Primitive*> insideObjects){
     if(t_max == INFINITY){ // No hit.
         return BACKGROUND_COLOR;
     }
+
+    // We hit something, and have aquired it's material. Run surface shader
+    defaultShader(*this);
 
     // Keep track of which objects we have crossed into, for refraction rays etc..
     // Are we currently inside an object?

@@ -7,7 +7,8 @@
 #include "Vec3f.h"
 #include "scene_io.h"
 class Primitive;
-
+class Ray;
+typedef void(*surface_shader)(Ray &ray);
 #define BACKGROUND_COLOR Colr(0,0,0)
 #define BUMP_EPSILON 0.0001
 #define IOR_AIR 1.0
@@ -33,7 +34,7 @@ public:
     Vec3f intersectionNormal;
 
     Primitive* currentObject;
-    
+    surface_shader surfaceShader;
     Pos intersectionPoint() const;
     Colr trace(int bounces, std::unordered_set<Primitive*> insideObjects);
     Colr trace(int bounces);

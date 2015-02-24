@@ -4,6 +4,7 @@
 #include "Ray.h"
 class Primitive {
 public:
+    const char* name;
 	Primitive();
 	~Primitive();
 	virtual bool intersect(Ray &ray) = 0;
