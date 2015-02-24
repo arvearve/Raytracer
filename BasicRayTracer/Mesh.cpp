@@ -7,7 +7,7 @@
 //
 
 #include "Mesh.h"
-#define EPSILON 0.0000001f
+#define EPSILON 0.00001f
 Mesh::Mesh(const PolySetIO polySet, const MaterialIO* materials, const long numMaterials): materials(materials, materials + numMaterials), triangleCount(polySet.numPolys){
     if(polySet.type != POLYSET_TRI_MESH){ std::cout << "Unimplemented polyset type: " << polySet.type << std::endl; }
     float numPolys = polySet.numPolys;
@@ -20,7 +20,8 @@ Mesh::Mesh(const PolySetIO polySet, const MaterialIO* materials, const long numM
         normals.push_back(N);
         normType = polySet.normType;
         materialBinding = polySet.materialBinding;
-        polygons.push_back(polygon);
+        Triangle t = Triangle(polygon);
+        triangles.push_back(t);
 
         xmin = fmin(xmin, fmin(polygon.vert[0].pos[0], fmin(polygon.vert[1].pos[0], polygon.vert[2].pos[0])));
         ymin = fmin(ymin, fmin(polygon.vert[0].pos[1], fmin(polygon.vert[1].pos[1], polygon.vert[2].pos[1])));
@@ -41,73 +42,47 @@ Mesh::Mesh(const PolySetIO polySet, const MaterialIO* materials, const long numM
 bool Mesh::intersect(Ray &ray){
     if(!bboxIntersect(ray)){ return false; }
     for (int i = 0; i < triangleCount ; i++) {
-        PolygonIO poly = polygons[i];
-        VertexIO v0 = poly.vert[0];
-        VertexIO v1 = poly.vert[1];
-        VertexIO v2 = poly.vert[2];
-        Vec3f N = normals[i];
-        Vec3f v0_Origin = Vec3f(v0.pos[0] - ray.startPosition.x,
-                                v0.pos[1] - ray.startPosition.y,
-                                v0.pos[2] - ray.startPosition.z);
-        // u = v1 - v0
-        Vec3f u = Vec3f(v1.pos[0] - v0.pos[0],
-                        v1.pos[1] - v0.pos[1],
-                        v1.pos[2] - v0.pos[2]);
+        Triangle tri = triangles[i];
 
-        // v = v2 - v0;
-        Vec3f v = Vec3f(v2.pos[0] - v0.pos[0],
-                        v2.pos[1] - v0.pos[1],
-                        v2.pos[2] - v0.pos[2]);
+        // First check for plane intersection
+        Vec3f w0 = tri.p0 - ray.startPosition;
+        float r1 = Vec3f::dot(tri.n, w0);
+        float r2 = Vec3f::dot(tri.n, ray.direction);
 
-        // plane intersect
-        float r1 = Vec3f::dot(N, v0_Origin);
-        float r2 = Vec3f::dot(N, ray.direction);
+        // Check if the ray is parallel to the plane (within some epsilon)
+        if(fabsf(r2) <= EPSILON) {
+            continue;
+        }
 
-        if (fabs(r2) < EPSILON) { continue; }
         float r = r1 / r2;
-        if (r <= EPSILON) { continue; }
 
-        // Intersection point with Plane
-        Pos intersectionPoint = Pos(ray.startPosition.x + ray.direction.x * r,
-                                    ray.startPosition.y + ray.direction.y * r,
-                                    ray.startPosition.z + ray.direction.z * r);
+        if( r < 0.0) { continue; }
+        if ( r > ray.t_max) { continue; }
 
-        Vec3f w = Vec3f(intersectionPoint.x - v0.pos[0],
-                        intersectionPoint.y - v0.pos[1],
-                        intersectionPoint.z - v0.pos[2]);
-        // Now test if we hit inside the triangle
-        float uu = Vec3f::dot(u, u);
-        float uv = Vec3f::dot(u, v);
-        float uw = Vec3f::dot(u, w);
-        float vv = Vec3f::dot(v, v);
-        float vw = Vec3f::dot(v, w);
+        // Plane intersection confirmed. Check if we are inside the triangle:
 
-        float denom = uv*uv - uu*vv;
-        if( denom >= -EPSILON){
-            continue;
-        }
-        float s = (uv*vw - vv*uw) / denom;
-        float t = (uv*uw - uu*vw) / denom;
+        Pos p1 = ray.startPosition + ray.direction * r;
+        Pos w = p1 - tri.p0;
+        float uw = Vec3f::dot(tri.u, w);
+        float vw = Vec3f::dot(tri.v, w);
+        float s = (tri.uv * vw - tri.vv*uw) * tri.invDenom;
+        float t = (tri.uv * uw - tri.uu*vw) * tri.invDenom;
+        if (s < 0.0f || t < 0.0f || s + t > 1.0f){ continue; } // Outside triangle
 
-        // triangle test
-        if (s <= 0.0f || t <= 0.0f || s + t > 1.0f) {
-            continue;
-        }
 
-        // hit found
+        // Triangle Intersection!
         if (r < ray.t_max) {
             ray.currentObject = this;
             ray.t_max= r;
             ray.u = s;
             ray.v = t;
             if(normType == PER_VERTEX_NORMAL){
-                ray.intersectionNormal = interpNormals(s, t, v0, v1, v2);
+                ray.intersectionNormal = interpNormals(s, t, tri.n0, tri.n1, tri.n2);
             } else {
                 ray.intersectionNormal = normals[i];
             }
-
             if(materialBinding == PER_VERTEX_MATERIAL){
-                ray.material = interpolate(s, t, v0, v1, v2);
+                ray.material = interpolate(s, t, tri.v0, tri.v1, tri.v2);
             } else {
                 ray.material = materials[0];
             }
@@ -118,10 +93,7 @@ bool Mesh::intersect(Ray &ray){
 }
 
 
-Vec3f Mesh::interpNormals(const float u, const float v, const VertexIO &v1, const VertexIO &v2, const VertexIO &v3) const {
-    Vec3f n1 = Vec3f(v1.norm);
-    Vec3f n2 = Vec3f(v2.norm);
-    Vec3f n3 = Vec3f(v3.norm);
+Vec3f Mesh::interpNormals(const float u, const float v, const Vec3f &n1, const Vec3f &n2, const Vec3f &n3) const {
     float w = 1.0 - (u+v);
     return n2*u + n3*v + n1*w;
 }

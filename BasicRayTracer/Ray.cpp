@@ -148,7 +148,7 @@ Colr Ray::refraction(const Pos point, const int bounces, const float ior_a, cons
 Colr Ray::shadow(const Vec3f &L, const float lightDistance) const {
     Colr shadowFactor = Colr(1,1,1);
     for( auto object : objects){
-        Ray shadowRay = Ray(intersectionPoint(), L);
+        Ray shadowRay = Ray(intersectionPoint() + intersectionNormal*BUMP_EPSILON , L);
         if(object->intersect(shadowRay)){
             Vec3f intersectVector = shadowRay.intersectionPoint() - shadowRay.startPosition;
             if( (intersectVector.length() >= lightDistance) ){ continue; }
