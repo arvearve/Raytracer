@@ -7,10 +7,12 @@
 //
 
 #include "Mesh.h"
-#define EPSILON 0.0001f
+#define EPSILON 0.0000001f
 Mesh::Mesh(const PolySetIO polySet, const MaterialIO* materials, const long numMaterials): materials(materials, materials + numMaterials), triangleCount(polySet.numPolys){
     if(polySet.type != POLYSET_TRI_MESH){ std::cout << "Unimplemented polyset type: " << polySet.type << std::endl; }
     float numPolys = polySet.numPolys;
+    float xmin = INFINITY, ymin = INFINITY, zmin = INFINITY;
+    float xmax = -INFINITY, ymax = -INFINITY, zmax = -INFINITY;
 
     for(int i = 0; i < numPolys; i++){
         PolygonIO polygon = polySet.poly[i];
@@ -19,11 +21,25 @@ Mesh::Mesh(const PolySetIO polySet, const MaterialIO* materials, const long numM
         normType = polySet.normType;
         materialBinding = polySet.materialBinding;
         polygons.push_back(polygon);
+
+        xmin = fmin(xmin, fmin(polygon.vert[0].pos[0], fmin(polygon.vert[1].pos[0], polygon.vert[2].pos[0])));
+        ymin = fmin(ymin, fmin(polygon.vert[0].pos[1], fmin(polygon.vert[1].pos[1], polygon.vert[2].pos[1])));
+        zmin = fmin(zmin, fmin(polygon.vert[0].pos[2], fmin(polygon.vert[1].pos[2], polygon.vert[2].pos[2])));
+
+        xmax = fmax(xmax, fmax(polygon.vert[0].pos[0], fmax(polygon.vert[1].pos[0], polygon.vert[2].pos[0])));
+        ymax = fmax(ymax, fmax(polygon.vert[0].pos[1], fmax(polygon.vert[1].pos[1], polygon.vert[2].pos[1])));
+        zmax = fmax(zmax, fmax(polygon.vert[0].pos[2], fmax(polygon.vert[1].pos[2], polygon.vert[2].pos[2])));
+
     }
+
+
+    bounds[0] = Vec3f(xmin, ymin, zmin);
+    bounds[1] = Vec3f(xmax, ymax, zmax);
 }
 
 
 bool Mesh::intersect(Ray &ray){
+    if(!bboxIntersect(ray)){ return false; }
     for (int i = 0; i < triangleCount ; i++) {
         PolygonIO poly = polygons[i];
         VertexIO v0 = poly.vert[0];
@@ -67,12 +83,16 @@ bool Mesh::intersect(Ray &ray){
         float vw = Vec3f::dot(v, w);
 
         float denom = uv*uv - uu*vv;
-        if( denom >= -EPSILON){ continue; }
+        if( denom >= -EPSILON){
+            continue;
+        }
         float s = (uv*vw - vv*uw) / denom;
         float t = (uv*uw - uu*vw) / denom;
 
         // triangle test
-        if (s <= 0.0f || t <= 0.0f || s + t > 1.0f) { continue; }
+        if (s <= 0.0f || t <= 0.0f || s + t > 1.0f) {
+            continue;
+        }
 
         // hit found
         if (r < ray.t_max) {

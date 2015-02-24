@@ -10,6 +10,8 @@ material(material)
 {
     name = _name;
     radius_sq = radius*radius;
+    bounds[0] = Vec3f(center.x - radius, center.y - radius, center.z - radius);
+    bounds[1] = Vec3f(center.x + radius, center.y + radius, center.z + radius);
 }
 
 bool Sphere::intersect(Ray &ray) {
@@ -24,7 +26,7 @@ bool Sphere::intersect(Ray &ray) {
         return false;
     }
     float t_min = quadratic_min(a, b, discriminant);
-    float t_max = quadratic_max(a, b, discriminant);
+//    float t_max = quadratic_max(a, b, discriminant);
     float t = t_min;
     if(t > ray.t_max || t < 0){
         // This ray has already intersected another primitive at a closer point. Ignore this sphere.

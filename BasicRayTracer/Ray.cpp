@@ -6,8 +6,13 @@ extern std::vector<Primitive*> objects;
 extern std::vector<LightIO*> lights;
 size_t Ray::counter = 0;
 Ray::Ray(Pos startPosition, Vec3f direction)
-:_id(++counter), startPosition(startPosition), direction(direction.normalize())
+:_id(++counter), startPosition(startPosition),
+direction(direction.normalize()),
+inv_direction(Vec3f(1.0/direction.x, 1.0/direction.y, 1.0/direction.z))
 {
+    sign[0] = (inv_direction.x < 0);
+    sign[1] = (inv_direction.y < 0);
+    sign[2] = (inv_direction.z < 0);
     surfaceShader = defaultShader;
     t_max = INFINITY;
     color = BACKGROUND_COLOR;

@@ -26,6 +26,9 @@ public:
     Pos startPosition;
     Vec3f direction;
 
+    Vec3f inv_direction;
+    int sign[3];
+
     Colr color;
     float t_max;
     float u;
