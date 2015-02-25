@@ -20,7 +20,7 @@ Mesh::Mesh(const PolySetIO polySet, const MaterialIO* materials, const long numM
         normals.push_back(N);
         normType = polySet.normType;
         materialBinding = polySet.materialBinding;
-        Triangle t = Triangle(polygon, *this, N);
+        Triangle* t = new Triangle(polygon, *this, N);
         triangles.push_back(t);
 
         xmin = fmin(xmin, fmin(polygon.vert[0].pos[0], fmin(polygon.vert[1].pos[0], polygon.vert[2].pos[0])));
@@ -30,23 +30,41 @@ Mesh::Mesh(const PolySetIO polySet, const MaterialIO* materials, const long numM
         xmax = fmax(xmax, fmax(polygon.vert[0].pos[0], fmax(polygon.vert[1].pos[0], polygon.vert[2].pos[0])));
         ymax = fmax(ymax, fmax(polygon.vert[0].pos[1], fmax(polygon.vert[1].pos[1], polygon.vert[2].pos[1])));
         zmax = fmax(zmax, fmax(polygon.vert[0].pos[2], fmax(polygon.vert[1].pos[2], polygon.vert[2].pos[2])));
-
     }
-
-
     bounds[0] = Vec3f(xmin, ymin, zmin);
     bounds[1] = Vec3f(xmax, ymax, zmax);
+    std::cout << "Building KD-tree for Mesh: " << this << std::endl;
+    Node* root;
+    root = root->RecBuild(triangles, Box(bounds[0], bounds[1]), 0, SplitPlane());
+    node = *root;
+    std::cout << "Finished building kd-tree."<< std::endl;
+
 }
 
 
 bool Mesh::intersect(Ray &ray){
     if(!bboxIntersect(ray)){ return false; }
-    for (int i = 0; i < triangleCount ; i++) {
-        triangles[i].intersect(ray);
-    }
+//    for (int i = 0; i < triangleCount ; i++) {
+//        triangles[i]->intersect(ray);
+//    }
+    node.traverse(ray);
     // Triangle Intersection!
     return ray.t_max < INFINITY;
 }
+
+
+
+Vec3f Mesh::normal(const PolygonIO polygon) const {
+    Pos a = Pos(polygon.vert[0].pos);
+    Pos b = Pos(polygon.vert[1].pos);
+    Pos c = Pos(polygon.vert[2].pos);
+    Vec3f ab = Vec3f::normalize((b-a));
+    Vec3f ac = Vec3f::normalize((c-a));
+    Vec3f N = Vec3f::normalize(Vec3f::cross(ab, ac));
+    return N;
+}
+
+#pragma mark - Triangle stuff
 
 bool Triangle::intersect(Ray &ray) const{
     // First check for plane intersection
@@ -90,9 +108,9 @@ bool Triangle::intersect(Ray &ray) const{
         }
     }
 
-    return true;
-
+    return ray.t_max < INFINITY;
 }
+
 Vec3f Triangle::interpNormals(const float u, const float v, const Vec3f &n1, const Vec3f &n2, const Vec3f &n3) const {
     float w = 1.0 - (u+v);
     return n2*u + n3*v + n1*w;
@@ -122,22 +140,7 @@ MaterialIO Triangle::interpolate(const float u,const float v,const VertexIO &v1,
     result.specColor[0] = u*m2.specColor[0] + v*m3.specColor[0] + w*m1.specColor[0];
     result.specColor[1] = u*m2.specColor[1] + v*m3.specColor[1] + w*m1.specColor[1];
     result.specColor[2] = u*m2.specColor[2] + v*m3.specColor[2] + w*m1.specColor[2];
-
+    
     return result;
 }
-
-
-
-
-Vec3f Mesh::normal(const PolygonIO polygon) const {
-    Pos a = Pos(polygon.vert[0].pos);
-    Pos b = Pos(polygon.vert[1].pos);
-    Pos c = Pos(polygon.vert[2].pos);
-    Vec3f ab = b-a;
-    Vec3f ac = c-a;
-    Vec3f N = Vec3f::cross(ab, ac).normalize();
-    return N;
-}
-
-
 
