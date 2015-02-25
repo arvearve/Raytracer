@@ -20,7 +20,7 @@ Mesh::Mesh(const PolySetIO polySet, const MaterialIO* materials, const long numM
         normals.push_back(N);
         normType = polySet.normType;
         materialBinding = polySet.materialBinding;
-        Triangle t = Triangle(polygon);
+        Triangle t = Triangle(polygon, *this, N);
         triangles.push_back(t);
 
         xmin = fmin(xmin, fmin(polygon.vert[0].pos[0], fmin(polygon.vert[1].pos[0], polygon.vert[2].pos[0])));
@@ -42,66 +42,66 @@ Mesh::Mesh(const PolySetIO polySet, const MaterialIO* materials, const long numM
 bool Mesh::intersect(Ray &ray){
     if(!bboxIntersect(ray)){ return false; }
     for (int i = 0; i < triangleCount ; i++) {
-        Triangle tri = triangles[i];
-
-        // First check for plane intersection
-        Vec3f w0 = tri.p0 - ray.startPosition;
-        float r1 = Vec3f::dot(tri.n, w0);
-        float r2 = Vec3f::dot(tri.n, ray.direction);
-
-        // Check if the ray is parallel to the plane (within some epsilon)
-        if(fabsf(r2) <= EPSILON) {
-            continue;
-        }
-
-        float r = r1 / r2;
-
-        if( r < 0.0) { continue; }
-        if ( r > ray.t_max) { continue; }
-
-        // Plane intersection confirmed. Check if we are inside the triangle:
-
-        Pos p1 = ray.startPosition + ray.direction * r;
-        Pos w = p1 - tri.p0;
-        float uw = Vec3f::dot(tri.u, w);
-        float vw = Vec3f::dot(tri.v, w);
-        float s = (tri.uv * vw - tri.vv*uw) * tri.invDenom;
-        float t = (tri.uv * uw - tri.uu*vw) * tri.invDenom;
-        if (s < 0.0f || t < 0.0f || s + t > 1.0f){ continue; } // Outside triangle
-
-
-        // Triangle Intersection!
-        if (r < ray.t_max) {
-            ray.currentObject = this;
-            ray.t_max= r;
-            ray.u = s;
-            ray.v = t;
-            if(normType == PER_VERTEX_NORMAL){
-                ray.intersectionNormal = interpNormals(s, t, tri.n0, tri.n1, tri.n2);
-            } else {
-                ray.intersectionNormal = normals[i];
-            }
-            if(materialBinding == PER_VERTEX_MATERIAL){
-                ray.material = interpolate(s, t, tri.v0, tri.v1, tri.v2);
-            } else {
-                ray.material = materials[0];
-            }
-
-        }
+        triangles[i].intersect(ray);
     }
+    // Triangle Intersection!
     return ray.t_max < INFINITY;
 }
 
+bool Triangle::intersect(Ray &ray) const{
+    // First check for plane intersection
+    Vec3f w0 = p0 - ray.startPosition;
+    float r1 = Vec3f::dot(n, w0);
+    float r2 = Vec3f::dot(n, ray.direction);
 
-Vec3f Mesh::interpNormals(const float u, const float v, const Vec3f &n1, const Vec3f &n2, const Vec3f &n3) const {
+    // Check if the ray is parallel to the plane (within some epsilon)
+    if(fabsf(r2) <= EPSILON) {
+        return false;
+    }
+    float r = r1 / r2;
+
+    if( r < 0.0) { return false; }
+    if ( r > ray.t_max) { return false; }
+
+    // Plane intersection confirmed. Check if we are inside the triangle:
+
+    Pos p1 = ray.startPosition + ray.direction * r;
+    Pos w = p1 - p0;
+    float uw = Vec3f::dot(u, w);
+    float vw = Vec3f::dot(v, w);
+    float s = (uv * vw - vv*uw) * invDenom;
+    float t = (uv * uw - uu*vw) * invDenom;
+    if (s < 0.0f || t < 0.0f || s + t > 1.0f){ return false; } // Outside triangle
+                                                               // Triangle Intersection!
+    if (r < ray.t_max) {
+        ray.currentObject = &parentMesh;
+        ray.t_max= r;
+        ray.u = s;
+        ray.v = t;
+        if(parentMesh.normType == PER_VERTEX_NORMAL){
+            ray.intersectionNormal = interpNormals(s, t, n0, n1, n2);
+        } else {
+            ray.intersectionNormal = provided_n;
+        }
+        if(parentMesh.materialBinding == PER_VERTEX_MATERIAL){
+            ray.material = interpolate(s, t, v0, v1, v2);
+        } else {
+            ray.material = parentMesh.materials[0];
+        }
+    }
+
+    return true;
+
+}
+Vec3f Triangle::interpNormals(const float u, const float v, const Vec3f &n1, const Vec3f &n2, const Vec3f &n3) const {
     float w = 1.0 - (u+v);
     return n2*u + n3*v + n1*w;
 }
-MaterialIO Mesh::interpolate(const float u,const float v,const VertexIO &v1, const VertexIO &v2, const VertexIO &v3) const {
+MaterialIO Triangle::interpolate(const float u,const float v,const VertexIO &v1, const VertexIO &v2, const VertexIO &v3) const {
     MaterialIO result;
-    MaterialIO m1 = materials[v1.materialIndex];
-    MaterialIO m2 = materials[v2.materialIndex];
-    MaterialIO m3 = materials[v3.materialIndex];
+    MaterialIO m1 = parentMesh.materials[v1.materialIndex];
+    MaterialIO m2 = parentMesh.materials[v2.materialIndex];
+    MaterialIO m3 = parentMesh.materials[v3.materialIndex];
     float w = 1.0 - (u+v);
 
     result.ktran = u*m2.ktran + v*m3.ktran + w*m1.ktran;
