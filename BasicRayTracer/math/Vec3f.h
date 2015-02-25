@@ -82,6 +82,12 @@ public:
         return Vec3f(x*scale, y*scale, z*scale);
     };
 
+    inline float operator[](const int axis){
+        if(axis == 0){ return x; }
+        if(axis == 1){ return y; }
+        else { return z; }
+    }
+
     friend std::ostream& operator<<(std::ostream&, const Vec3f &vec);
     
 };

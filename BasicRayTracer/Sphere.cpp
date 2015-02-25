@@ -35,12 +35,13 @@ bool Sphere::intersect(Ray &ray) {
     Vec3f intersectionNormal = normal(ray.startPosition + ray.direction * t);
     float u, v;
     uv(intersectionNormal, u, v);
-    if(atoi(name)/10 == 1){
-        if(!CHECKERBOARD(u, v)){
-            return false;
+    if(name != NULL){
+        if(atoi(name)/10 == 1){
+            if(!CHECKERBOARD(u, v)){
+                return false;
+            }
         }
     }
-
     ray.currentObject = this;
     ray.t_max = t_min;
     ray.material = material;

@@ -107,9 +107,19 @@ static void loadScene(char *name) {
 	return;
 }
 
+void cleanupScene(){
+    if (scene != NULL) {
+        deleteScene(scene);
+    }
+
+    objects.clear();
+    lights.clear();
+
+}
+
 
 /* just a place holder, feel free to edit */
-void render(void) {
+void render(char* filename) {
     Pos E = Pos(scene->camera->position); // Eye position
     Vec3f V = Vec3f(scene->camera->viewDirection).normalize(); // View direction
     Vec3f U = Vec3f(scene->camera->orthoUp).normalize(); // Camera Up vector (orthoUp)
@@ -153,30 +163,64 @@ void render(void) {
 
 	/* save out the image */
 //	image.Save(_T("raytraced.png"), Gdiplus::ImageFormatPNG);
-    image.WriteToFile("raytraced2.bmp");
+    image.WriteToFile(filename);
     /* cleanup */
 
 	return;
 }
 
-
-
 int main(int argc, char *argv[]) {
-//	Timer total_timer;
-//	total_timer.startTimer();
+//    Timer total_timer;
+//    total_timer.startTimer();
 
-	loadScene((char *)"../Scenes2/test2.ascii");
+    // scene 1
+//    Timer scene1_timer;
+//    scene1_timer.startTimer();
+    loadScene("../Scenes2/test1.ascii");
+    render("outputimage1.bmp");
+    cleanupScene();
+//    scene1_timer.stopTimer();
+//    fprintf(stderr, "Scene 1: %.5lf secs\n\n", scene1_timer.getTime());
 
-	/* write your ray tracer here */
-	render();
+    // scene 2
+//    Timer scene2_timer;
+//    scene2_timer.startTimer();
+    loadScene("../Scenes2/test2.ascii");
+    render("outputimage2.bmp");
+    cleanupScene();
+//    scene2_timer.stopTimer();
+//    fprintf(stderr, "Scene 2: %.5lf secs\n\n", scene2_timer.getTime());
 
-	/* cleanup */
-	if (scene != NULL) {
-		deleteScene(scene);
-	}
+    // scene 3
+//    Timer scene3_timer;
+//    scene3_timer.startTimer();
+    loadScene("../Scenes2/test3.ascii");
+    render("outputimage3.bmp");
+    cleanupScene();
+//    scene3_timer.stopTimer();
+//    fprintf(stderr, "Scene 3: %.5lf secs\n\n", scene3_timer.getTime());
 
-//	total_timer.stopTimer();
-//	fprintf(stderr, "Total time: %.5lf secs\n\n", total_timer.getTime());
+    // scene 4
+//    Timer scene4_timer;
+//    scene4_timer.startTimer();
+    loadScene("../Scenes2/test4.ascii");
+    render("outputimage4.bmp");
+    cleanupScene();
+//    scene4_timer.stopTimer();
+//    fprintf(stderr, "Scene 4: %.5lf secs\n\n", scene4_timer.getTime());
 
-	return 0;
-}
+    // scene 5
+//    Timer scene5_timer;
+//    scene5_timer.startTimer();
+    loadScene("../Scenes2/test5.ascii");
+    render("outputimage5.bmp");
+    cleanupScene();
+//    scene5_timer.stopTimer();
+//    fprintf(stderr, "Scene 5: %.5lf secs\n\n", scene5_timer.getTime());
+
+    
+    
+//    total_timer.stopTimer();
+//    fprintf(stderr, "Total time: %.5lf secs\n\n", total_timer.getTime());
+
+    return 1;}
