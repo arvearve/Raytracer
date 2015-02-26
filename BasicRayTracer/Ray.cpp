@@ -159,8 +159,8 @@ Colr Ray::shadow(const Vec3f &L, const float lightDistance) const {
     return shadowFactor;
 }
 
-Colr Ray::diffuse(const Vec3f &L, Colr &color) const {
-    Colr result = Colr(material.diffColor) * fmax(0,Vec3f::dot(L,intersectionNormal)) * color;
+Colr Ray::diffuse(const Vec3f &L, Colr &lightColor) const {
+    Colr result = Colr(material.diffColor) * fmax(0,Vec3f::dot(L,intersectionNormal)) * lightColor;
     return result * (1.0-material.ktran);
 }
 

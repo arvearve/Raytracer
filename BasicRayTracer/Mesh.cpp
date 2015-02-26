@@ -78,13 +78,13 @@ bool Triangle::intersect(Ray &ray) const{
     }
     float r = r1 / r2;
 
-    if( r < 0.0) { return false; }
+    if( r < 0.00002) { return false; }
     if ( r > ray.t_max) { return false; }
 
     // Plane intersection confirmed. Check if we are inside the triangle:
 
-    Pos p1 = ray.startPosition + ray.direction * r;
-    Pos w = p1 - p0;
+    Pos intersectionPoint = ray.startPosition + ray.direction * r;
+    Pos w = intersectionPoint - p0;
     float uw = Vec3f::dot(u, w);
     float vw = Vec3f::dot(v, w);
     float s = (uv * vw - vv*uw) * invDenom;

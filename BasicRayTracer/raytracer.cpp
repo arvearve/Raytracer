@@ -114,7 +114,6 @@ void cleanupScene(){
     if (scene != NULL) {
         deleteScene(scene);
     }
-
     objects.clear();
     lights.clear();
 
