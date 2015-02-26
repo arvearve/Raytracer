@@ -96,11 +96,18 @@ bool Triangle::intersect(Ray &ray) const{
         ray.t_max= r;
         ray.u = s;
         ray.v = t;
+        Vec3f normalAtIntersectionPoint;
         if(parentMesh.normType == PER_VERTEX_NORMAL){
-            ray.intersectionNormal = interpNormals(s, t, n0, n1, n2);
+             normalAtIntersectionPoint = interpNormals(s, t, n0, n1, n2);
+
         } else {
-            ray.intersectionNormal = provided_n;
+            normalAtIntersectionPoint = provided_n;
         }
+        // If we hit the backside of the triangle, flip the normal.
+        float dot = Vec3f::dot(normalAtIntersectionPoint, ray.direction);
+        int behindFactor = (dot < 0) - (dot > 0); // 1 if we are behind, -1 otherwise.
+        ray.intersectionNormal = normalAtIntersectionPoint * behindFactor;
+
         if(parentMesh.materialBinding == PER_VERTEX_MATERIAL){
             ray.material = interpolate(s, t, v0, v1, v2);
         } else {
