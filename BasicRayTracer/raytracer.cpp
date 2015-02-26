@@ -10,8 +10,10 @@
 #include "EasyBMP.h"
 #include "Ray.h"
 #include "kdTree.h"
-#define IMAGE_WIDTH 1500
-#define IMAGE_HEIGHT 1500
+#include "Framebuffer.h"
+#define IMAGE_WIDTH 256
+#define IMAGE_HEIGHT 256
+#define NUM_SAMPLES 4
 #define MAX_BOUNCES	10
 
 typedef unsigned char u08;
@@ -122,54 +124,12 @@ void cleanupScene(){
 
 /* just a place holder, feel free to edit */
 void render(char* filename) {
-    std::cout << "rendering " << filename << std::endl;
-    Pos E = Pos(scene->camera->position); // Eye position
-    Vec3f V = Vec3f(scene->camera->viewDirection).normalize(); // View direction
-    Vec3f U = Vec3f(scene->camera->orthoUp).normalize(); // Camera Up vector (orthoUp)
-    float fovVertical = scene->camera->verticalFOV;
-
-    int w = IMAGE_WIDTH;
-    int h = IMAGE_HEIGHT;
-    float fovHorizontal = fovVertical * ((float)w/(float)h);
-    Vec3f A = Vec3f::cross(V, U); // Right vector
-    Vec3f B = Vec3f::cross(A, V); // Up vector aligned with image plane.
-    A = A.normalize();
-    B = B.normalize();
-    float c = 1;
-    Pos M = E + (V*c); // Middle of image plane.
-    Vec3f Y = B * (c * tan(fovVertical / 2.0));
-    Vec3f X = A * (c * tan(fovHorizontal / 2.0));
+    Framebuffer buf = Framebuffer(IMAGE_WIDTH, IMAGE_HEIGHT, NUM_SAMPLES);
+    std::cout << "Rendering " << filename<< std::endl;
+    buf.render(filename);
 
 
-
-//	CImage image;
-//	image.Create(IMAGE_WIDTH, IMAGE_HEIGHT, 24);
-    BMP image;
-    image.SetBitDepth(24);
-    image.SetSize(IMAGE_WIDTH, IMAGE_HEIGHT);
-	for (int j = 0; j < IMAGE_HEIGHT; j++) {
-//        std::cout  << "Rendering: " << j << "/" << IMAGE_HEIGHT << std::endl;
-		for (int i = 0; i < IMAGE_WIDTH; i++) {
-			float sx = (i + 1.0 / 2.0) * (1.0 / IMAGE_WIDTH);
-			float sy = (j + 1.0 / 2.0) * (1.0 / IMAGE_HEIGHT);
-			Pos P = M + X*(2.0 * sx - 1.0) + Y * (2.0 * sy - 1.0);
-            Ray ray = Ray(E, P-E);
-            Colr rayColor = ray.trace(10);
-
-            RGBApixel *pixel = image(i, IMAGE_HEIGHT - j - 1);
-            pixel->Red = rayColor.x*255;
-            pixel->Green = rayColor.y*255;
-            pixel->Blue = rayColor.z*255;
-
-		}
-	}
-
-	/* save out the image */
-//	image.Save(_T("raytraced.png"), Gdiplus::ImageFormatPNG);
-    image.WriteToFile(filename);
-    /* cleanup */
-    std::cout << "Done." << std::endl;
-	return;
+    std::cout << "Done rendering." << std::endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -270,5 +230,5 @@ int main(int argc, char *argv[]) {
 
     total_timer.stop();
     std::cout << "Total time for all scenes: " << total_timer.getElapsedTimeInMilliSec() << "ms." << std::endl;
-    std::cout << "Resolution was " << IMAGE_HEIGHT << "*" << IMAGE_WIDTH << "." << std::endl;
+    std::cout << "Resolution was " << IMAGE_HEIGHT << "*" << IMAGE_WIDTH << ", with " << NUM_SAMPLES << "per pixel." << std::endl;
     return 1;}
