@@ -3,15 +3,15 @@
 #include <vector>
 //#include <atlimage.h>
 #include "scene_io.h"
-//#include "Timer.h"
+#include "Timer.h"
 #include "Vec3f.h"
 #include "Sphere.h"
 #include "Mesh.h"
 #include "EasyBMP.h"
 #include "Ray.h"
 #include "kdTree.h"
-#define IMAGE_WIDTH 512
-#define IMAGE_HEIGHT 512
+#define IMAGE_WIDTH 1500
+#define IMAGE_HEIGHT 1500
 #define MAX_BOUNCES	10
 
 typedef unsigned char u08;
@@ -174,43 +174,102 @@ void render(char* filename) {
 }
 
 int main(int argc, char *argv[]) {
-//    Timer total_timer;
-//    total_timer.startTimer();
+    Timer total_timer;
+    total_timer.start();
 
-    //    Timer scene5_timer;
-    //    scene5_timer.startTimer();
+
+#pragma mark - Scene 1
+
+    Timer scene1_build_timer, scene1_draw_timer, scene1_total_timer;
+    scene1_build_timer.start();
+    scene1_draw_timer.start();
+    scene1_total_timer.start();
     loadScene("../Scenes2/test1.ascii");
+    scene1_build_timer.stop();
     render("test1.bmp");
+    scene1_draw_timer.stop();
     cleanupScene();
-    //    scene5_timer.stopTimer();
-    //    Timer scene5_timer;
-    //    scene5_timer.startTimer();
+    scene1_total_timer.stop();
+
+#pragma mark Scene 2
+
+    Timer scene2_build_timer, scene2_draw_timer, scene2_total_timer;
+    scene2_build_timer.start();
+    scene2_draw_timer.start();
+    scene2_total_timer.start();
     loadScene("../Scenes2/test2.ascii");
+    scene2_build_timer.stop();
     render("test2.bmp");
+    scene2_draw_timer.stop();
     cleanupScene();
-    //    scene5_timer.stopTimer();
+    scene2_total_timer.stop();
 
-    //    Timer scene5_timer;
-    //    scene5_timer.startTimer();
+# pragma mark Scene 3
+
+    Timer scene3_build_timer, scene3_draw_timer, scene3_total_timer;
+    scene3_build_timer.start();
+    scene3_draw_timer.start();
+    scene3_total_timer.start();
     loadScene("../Scenes2/test3.ascii");
+    scene3_build_timer.stop();
     render("test3.bmp");
+    scene3_draw_timer.stop();
     cleanupScene();
-    //    scene5_timer.stopTimer();
+    scene3_total_timer.stop();
 
-    //    scene5_timer.startTimer();
+#pragma mark - Scene 4
+
+    Timer scene4_build_timer, scene4_draw_timer, scene4_total_timer;
+    scene4_build_timer.start();
+    scene4_draw_timer.start();
+    scene4_total_timer.start();
     loadScene("../Scenes2/test4.ascii");
+    scene4_build_timer.stop();
     render("test4.bmp");
+    scene4_draw_timer.stop();
     cleanupScene();
-    //    scene5_timer.stopTimer();
+    scene4_total_timer.stop();
 
-    //    scene5_timer.startTimer();
+
+#pragma mark - Scene 5
+
+    Timer scene5_build_timer, scene5_draw_timer, scene5_total_timer;
+    scene5_build_timer.start();
+    scene5_draw_timer.start();
+    scene5_total_timer.start();
     loadScene("../Scenes2/test5.ascii");
+    scene5_build_timer.stop();
     render("test5.bmp");
+    scene5_draw_timer.stop();
     cleanupScene();
-    //    scene5_timer.stopTimer();
+    scene5_total_timer.stop();
 
+    std::cout << "Scene1. Load: " << scene1_build_timer.getElapsedTimeInMilliSec()
+    << "ms, Draw: "  << scene1_draw_timer.getElapsedTimeInMilliSec()
+    << "ms, Total: " << scene1_total_timer.getElapsedTimeInMilliSec()
+    << "ms." << std::endl;
 
-//    total_timer.stopTimer();
-//    fprintf(stderr, "Total time: %.5lf secs\n\n", total_timer.getTime());
+    std::cout << "Scene2. Load: " << scene2_build_timer.getElapsedTimeInMilliSec()
+    << "ms, Draw: "  << scene2_draw_timer.getElapsedTimeInMilliSec()
+    << "ms, Total: " << scene2_total_timer.getElapsedTimeInMilliSec()
+    << "ms." << std::endl;
 
+    std::cout << "Scene3. Load: " << scene3_build_timer.getElapsedTimeInMilliSec()
+    << "ms, Draw: "  << scene3_draw_timer.getElapsedTimeInMilliSec()
+    << "ms, Total: " << scene3_total_timer.getElapsedTimeInMilliSec()
+    << "ms." << std::endl;
+
+    std::cout << "Scene4. Load: " << scene4_build_timer.getElapsedTimeInMilliSec()
+    << "ms, Draw: "  << scene4_draw_timer.getElapsedTimeInMilliSec()
+    << "ms, Total: " << scene4_total_timer.getElapsedTimeInMilliSec()
+    << "ms." << std::endl;
+
+    std::cout << "Scene5. Load: " << scene5_build_timer.getElapsedTimeInMilliSec()
+    << "ms, Draw: "  << scene5_draw_timer.getElapsedTimeInMilliSec()
+    << "ms, Total: " << scene5_total_timer.getElapsedTimeInMilliSec()
+    << "ms." << std::endl;
+
+    total_timer.stop();
+    std::cout << "Total time for all scenes: " << total_timer.getElapsedTimeInMilliSec() << "ms." << std::endl;
+    std::cout << "Resolution was " << IMAGE_HEIGHT << "*" << IMAGE_WIDTH << "." << std::endl;
     return 1;}

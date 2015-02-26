@@ -1,52 +1,56 @@
-#ifndef TIMER_H
-#define TIMER_H
+//////////////////////////////////////////////////////////////////////////////
+// Timer.h
+// =======
+// High Resolution Timer.
+// This timer is able to measure the elapsed time with 1 micro-second accuracy
+// in both Windows, Linux and Unix system 
+//
+//  AUTHOR: Song Ho Ahn (song.ahn@gmail.com)
+// CREATED: 2003-01-13
+// UPDATED: 2006-01-13
+//
+// Copyright (c) 2003 Song Ho Ahn
+//////////////////////////////////////////////////////////////////////////////
 
-typedef unsigned long long LARGE_INTEGER;
+#ifndef TIMER_H_DEF
+#define TIMER_H_DEF
+
+#ifdef WIN32   // Windows system specific
+#include <windows.h>
+#else          // Unix based system specific
+#include <sys/time.h>
+#endif
 
 
-class Timer {
-private:
-	LARGE_INTEGER freq;
-	LARGE_INTEGER t_start, t_end;
-	LARGE_INTEGER total_time;
+class Timer
+{
 public:
-	Timer() {
-		 QueryPerformanceFrequency(&freq);
-	}
-	
-	void resetTimer(void) {
-		total_time.QuadPart = 0;
-	}
+    Timer();                                    // default constructor
+    ~Timer();                                   // default destructor
 
-	void unpauseTimer(void) {
-		QueryPerformanceCounter(&t_start);
-	}
+    void   start();                             // start timer
+    void   stop();                              // stop the timer
+    double getElapsedTime();                    // get elapsed time in second
+    double getElapsedTimeInSec();               // get elapsed time in second (same as getElapsedTime)
+    double getElapsedTimeInMilliSec();          // get elapsed time in milli-second
+    double getElapsedTimeInMicroSec();          // get elapsed time in micro-second
 
-	void pauseTimer(void) {
-		QueryPerformanceCounter(&t_end);
-		total_time.QuadPart += (t_end.QuadPart - t_start.QuadPart);
-	}
 
-	void startTimer(void) {
-		QueryPerformanceCounter(&t_start);
-	}
+protected:
 
-	void stopTimer(void) {
-		QueryPerformanceCounter(&t_end);
-		total_time.QuadPart = (t_end.QuadPart - t_start.QuadPart);
-	}
 
-	void printTime(void) {
-		fprintf(stderr,"%lf\n",((double) total_time.QuadPart) /((double) freq.QuadPart));
-		fflush(stderr);
-	}
-
-	double getTime(void) const{
-		return ((double) total_time.QuadPart) /((double) freq.QuadPart);
-	}
-
+private:
+    double startTimeInMicroSec;                 // starting time in micro-second
+    double endTimeInMicroSec;                   // ending time in micro-second
+    int    stopped;                             // stop flag 
+#ifdef WIN32
+    LARGE_INTEGER frequency;                    // ticks per second
+    LARGE_INTEGER startCount;                   //
+    LARGE_INTEGER endCount;                     //
+#else
+    timeval startCount;                         //
+    timeval endCount;                           //
+#endif
 };
 
-
-
-#endif		/* TIMER_H */
+#endif // TIMER_H_DEF
