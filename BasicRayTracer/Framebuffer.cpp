@@ -14,22 +14,19 @@ float Framebuffer::jitter(const float distance) const{
 
 extern SceneIO *scene;
 
-
-// Filter the samples contained in each pixel.
-// This is where we would hook up an image shader for HDR stuff and so on.
-void Framebuffer::filter(){
-    for (Pixel &pixel : pixels) {
-        int count = pixel.samples.size();
-        for (Colr sample:pixel.samples){
-            pixel.filteredColor.x += sample.x;
-            pixel.filteredColor.y += sample.y;
-            pixel.filteredColor.z += sample.z;
-        }
-        pixel.filteredColor.x = pixel.filteredColor.x / count;
-        pixel.filteredColor.y = pixel.filteredColor.y / count;
-        pixel.filteredColor.z = pixel.filteredColor.z / count;
+void Pixel::filter(){
+    int count = samples.size();
+    for (Colr sample: samples){
+        filteredColor.x += sample.x;
+        filteredColor.y += sample.y;
+        filteredColor.z += sample.z;
     }
+    filteredColor.x = filteredColor.x / count;
+    filteredColor.y = filteredColor.y / count;
+    filteredColor.z = filteredColor.z / count;
+    samples.clear();
 }
+
 
 
 void Framebuffer::saveFile(char *filename, bool flip){
@@ -122,12 +119,12 @@ void Framebuffer::renderLens(char* filename, const float sensorDistance){
                     currentPixel.samples.push_back(sample);
                 }
             }
+            currentPixel.filter();
             pixels.push_back(currentPixel);
         }
     }
 
     // Filter samples
-    filter();
     saveFile(filename, true);
 }
 
@@ -172,10 +169,10 @@ void Framebuffer::renderPinhole(char* filename, const float sensorDistance){
                     p.samples.push_back(sample);
                 }
             }
+            p.filter();
             pixels.push_back(p);
         }
     }
-    filter();
     saveFile(filename, false);
 }
 

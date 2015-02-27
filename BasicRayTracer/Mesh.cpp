@@ -8,7 +8,8 @@
 
 #include "Mesh.h"
 #define EPSILON 0.00001f
-Mesh::Mesh(const PolySetIO polySet, const MaterialIO* materials, const long numMaterials): materials(materials, materials + numMaterials), triangleCount(polySet.numPolys){
+Mesh::Mesh(const PolySetIO polySet, const MaterialIO* materials, const long numMaterials, char* _name): materials(materials, materials + numMaterials), triangleCount(polySet.numPolys){
+    name = _name;
     if(polySet.type != POLYSET_TRI_MESH){ std::cout << "Unimplemented polyset type: " << polySet.type << std::endl; }
     float numPolys = polySet.numPolys;
     float xmin = INFINITY, ymin = INFINITY, zmin = INFINITY;

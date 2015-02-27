@@ -8,6 +8,7 @@ size_t Ray::counter = 0;
 Ray::Ray(Pos startPosition, Vec3f direction)
 :_id(++counter), startPosition(startPosition),
 direction(direction.normalize()),
+u(0),v(0),
 inv_direction(Vec3f(1.0/direction.x, 1.0/direction.y, 1.0/direction.z))
 {
     sign[0] = (inv_direction.x < 0);

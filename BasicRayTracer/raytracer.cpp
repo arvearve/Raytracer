@@ -25,18 +25,22 @@ std::vector<Primitive*> objects;
 
 #pragma mark - Shaders
 void mirror(Ray &ray, const bool on);
+void earth(Ray &ray, const bool on);
 bool CHECKERBOARD(const float u, const float v);
-
 void defaultShader(Ray &ray){
-    if (ray.currentObject->name == NULL || ray.currentObject->name) {
+    if (ray.currentObject->name == NULL) {
         return;
     }
     else {
         int shader = atoi(ray.currentObject->name);
-        switch (shader) {
+        switch (shader%10) {
             case 1:
-                mirror(ray, CHECKERBOARD(ray.u, ray.v));
+                earth(ray, true);
+                mirror(ray, CHECKERBOARD( ray.u/2, ray.v/2));
+
                 break;
+            case 2:
+                earth(ray, true);
             default:
                 break;
         }
@@ -44,9 +48,10 @@ void defaultShader(Ray &ray){
 };
 
 
+
 bool CHECKERBOARD(const float u, const float v){
-    int CHECK_SIZE_X = 5;
-    int CHECK_SIZE_Y = 5;
+    int CHECK_SIZE_X = 10;
+    int CHECK_SIZE_Y = 10;
     float xbase = 1.0 / CHECK_SIZE_X;
     float ybase = 1.0 / CHECK_SIZE_Y;
     float x = fmod(u, 2.0/CHECK_SIZE_X);
@@ -55,6 +60,12 @@ bool CHECKERBOARD(const float u, const float v){
 }
 
 
+void earth(Ray& ray, bool on){
+    if(!on) { return; }
+    ray.material.diffColor[0] = 0.3;
+    ray.material.diffColor[1] = 0.3;
+    ray.material.diffColor[2] = 1;
+}
 
 void mirror(Ray &ray, bool on){
     if (!on){ return; }
@@ -99,7 +110,7 @@ static void loadScene(char *name) {
         if( nextObj->type == POLYSET_OBJ){
             PolySetIO* polyset = (PolySetIO*)nextObj->data;
             MaterialIO* material = nextObj->material;
-            Mesh* mesh = new Mesh(*polyset, material, nextObj->numMaterials);
+            Mesh* mesh = new Mesh(*polyset, material, nextObj->numMaterials, nextObj->name);
             objects.push_back(mesh);
         }
         nextObj = nextObj->next;
@@ -136,6 +147,22 @@ int main(int argc, char *argv[]) {
     Timer total_timer;
     total_timer.start();
 
+
+#pragma mark - Fun scene
+
+    Timer fun_scene_build_timer, fun_scene_draw_timer, fun_scene_total_timer;
+    fun_scene_total_timer.start();
+
+    fun_scene_build_timer.start();
+    loadScene("../Scenes2/shader1.ascii");
+    fun_scene_build_timer.stop();
+
+    fun_scene_draw_timer.start();
+    render("hw3_shader1.bmp", 1);
+    fun_scene_draw_timer.stop();
+
+    cleanupScene();
+    fun_scene_total_timer.stop();
 
 #pragma mark - Scene 1
 
@@ -219,6 +246,11 @@ int main(int argc, char *argv[]) {
     cleanupScene();
     scene5_total_timer.stop();
 
+    std::cout << "Fun scene. Load: " << fun_scene_build_timer.getElapsedTimeInMilliSec()
+    << "ms, Draw: "  << fun_scene_draw_timer.getElapsedTimeInMilliSec()
+    << "ms, Total: " << fun_scene_total_timer.getElapsedTimeInMilliSec()
+    << "ms." << std::endl;
+
     std::cout << "Scene1. Load: " << scene1_build_timer.getElapsedTimeInMilliSec()
     << "ms, Draw: "  << scene1_draw_timer.getElapsedTimeInMilliSec()
     << "ms, Total: " << scene1_total_timer.getElapsedTimeInMilliSec()
@@ -243,6 +275,7 @@ int main(int argc, char *argv[]) {
     << "ms, Draw: "  << scene5_draw_timer.getElapsedTimeInMilliSec()
     << "ms, Total: " << scene5_total_timer.getElapsedTimeInMilliSec()
     << "ms." << std::endl;
+
 
     total_timer.stop();
     std::cout << "Total time for all scenes: " << total_timer.getElapsedTimeInMilliSec() << "ms." << std::endl;

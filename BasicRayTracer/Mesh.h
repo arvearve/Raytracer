@@ -27,7 +27,7 @@ public:
     long triangleCount;
     MaterialBinding materialBinding;
     NormType normType;
-    Mesh(const PolySetIO polySet, const MaterialIO* materials, const long materialCount);
+    Mesh(const PolySetIO polySet, const MaterialIO* materials, const long materialCount, char* name);
 
     virtual bool intersect(Ray &ray);
     Vec3f normal(const PolygonIO polygon) const;
