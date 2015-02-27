@@ -10,7 +10,7 @@ class Primitive;
 class Ray;
 typedef void(*surface_shader)(Ray &ray);
 #define BACKGROUND_COLOR Colr(0,0,0)
-#define BUMP_EPSILON 0.01
+#define BUMP_EPSILON 0.0001
 #define IOR_AIR 1.0
 #define IOR_GLASS 1.5
 class Ray

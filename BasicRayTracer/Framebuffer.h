@@ -22,20 +22,17 @@
  Used to jitter sample points inside their subpixel.
  */
 
-struct Sample {
-    Sample(const Pos p):pos(p), color(Colr(0,0,0)){}
-    Pos pos;
-    Colr color;
-};
 
 struct Pixel {
-    float jitter(const float distance) const;
+
+    Pos position;
     int numSamples;
-    std::vector<Sample> samples;
+    std::vector<Colr> samples;
     Colr filteredColor;
 
-    Pixel(int numSamples):numSamples(numSamples), samples(std::vector<Sample>()), filteredColor(Colr(0,0,0)){};
+    Pixel(int numSamples, Pos position):position(position),numSamples(numSamples), samples(std::vector<Colr>()), filteredColor(Colr(0,0,0)){};
     void filter();
+    float jitter(const float distance) const;
 };
 
 class Framebuffer {
@@ -45,17 +42,17 @@ private:
     int HEIGHT;
     int samples;
 
-    int round(double d);
     void initblack();
 public:
-    Framebuffer(const int w, const int h, const int samples):WIDTH(w), HEIGHT(h), samples(sqrt(samples)){
-        init();
-    };
-    void init();
+    Framebuffer(const int w, const int h, const int samples):WIDTH(w), HEIGHT(h), samples(sqrt(samples)){};
+    void init(const float focaldistance, const float focalDistance);
+    void  initPinhole(const float sensorDistance);
+    void renderLens(char* filename, const float sensorDistance);
+    void renderPinhole(char *filename, float sensorDistance);
+
     float jitter(const float distance) const;
-    void setPixelSamples(const float x);
-    void render(char *filename);
+
     void filter();
-    void saveFile(char *filename);
+    void saveFile(char *filename, bool flip);
 };
 #endif /* defined(__reyes__framebuffer__) */

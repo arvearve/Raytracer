@@ -11,10 +11,11 @@
 #include "Ray.h"
 #include "kdTree.h"
 #include "Framebuffer.h"
-#define IMAGE_WIDTH 256
-#define IMAGE_HEIGHT 256
-#define NUM_SAMPLES 4
+#define IMAGE_WIDTH 1500
+#define IMAGE_HEIGHT 1500
+#define NUM_SAMPLES 1
 #define MAX_BOUNCES	10
+#define SENSOR_DISTANCE 1
 
 typedef unsigned char u08;
 
@@ -123,12 +124,11 @@ void cleanupScene(){
 
 
 /* just a place holder, feel free to edit */
-void render(char* filename) {
-    Framebuffer buf = Framebuffer(IMAGE_WIDTH, IMAGE_HEIGHT, NUM_SAMPLES);
+void render(char* filename, int numSamples) {
+    Framebuffer buf = Framebuffer(IMAGE_WIDTH, IMAGE_HEIGHT, numSamples);
     std::cout << "Rendering " << filename<< std::endl;
-    buf.render(filename);
-
-
+//    buf.renderLens(filename, SENSOR_DISTANCE);
+    buf.renderPinhole(filename, SENSOR_DISTANCE);
     std::cout << "Done rendering." << std::endl;
 }
 
@@ -140,52 +140,65 @@ int main(int argc, char *argv[]) {
 #pragma mark - Scene 1
 
     Timer scene1_build_timer, scene1_draw_timer, scene1_total_timer;
-    scene1_build_timer.start();
-    scene1_draw_timer.start();
     scene1_total_timer.start();
+
+    scene1_build_timer.start();
     loadScene("../Scenes2/test1.ascii");
     scene1_build_timer.stop();
-    render("test1.bmp");
+
+    scene1_draw_timer.start();
+    render("hw3_test1.bmp",1);
     scene1_draw_timer.stop();
+
     cleanupScene();
     scene1_total_timer.stop();
 
 #pragma mark Scene 2
 
     Timer scene2_build_timer, scene2_draw_timer, scene2_total_timer;
-    scene2_build_timer.start();
-    scene2_draw_timer.start();
     scene2_total_timer.start();
+
+    scene2_build_timer.start();
     loadScene("../Scenes2/test2.ascii");
     scene2_build_timer.stop();
-    render("test2.bmp");
+
+    scene2_draw_timer.start();
+    render("hw3_test2.bmp", 1);
     scene2_draw_timer.stop();
+
     cleanupScene();
     scene2_total_timer.stop();
+
 
 # pragma mark Scene 3
 
     Timer scene3_build_timer, scene3_draw_timer, scene3_total_timer;
-    scene3_build_timer.start();
-    scene3_draw_timer.start();
     scene3_total_timer.start();
+
+    scene3_build_timer.start();
     loadScene("../Scenes2/test3.ascii");
     scene3_build_timer.stop();
-    render("test3.bmp");
+
+    scene3_draw_timer.start();
+    render("hw3_test3.bmp", 1);
     scene3_draw_timer.stop();
+
     cleanupScene();
     scene3_total_timer.stop();
 
 #pragma mark - Scene 4
 
     Timer scene4_build_timer, scene4_draw_timer, scene4_total_timer;
-    scene4_build_timer.start();
-    scene4_draw_timer.start();
     scene4_total_timer.start();
+
+    scene4_build_timer.start();
     loadScene("../Scenes2/test4.ascii");
     scene4_build_timer.stop();
-    render("test4.bmp");
+
+    scene4_draw_timer.start();
+    render("hw3_test4.bmp", 1);
     scene4_draw_timer.stop();
+
     cleanupScene();
     scene4_total_timer.stop();
 
@@ -193,13 +206,16 @@ int main(int argc, char *argv[]) {
 #pragma mark - Scene 5
 
     Timer scene5_build_timer, scene5_draw_timer, scene5_total_timer;
-    scene5_build_timer.start();
-    scene5_draw_timer.start();
     scene5_total_timer.start();
+
+    scene5_build_timer.start();
     loadScene("../Scenes2/test5.ascii");
     scene5_build_timer.stop();
-    render("test5.bmp");
+
+    scene5_draw_timer.start();
+    render("hw3_test5.bmp", 1);
     scene5_draw_timer.stop();
+
     cleanupScene();
     scene5_total_timer.stop();
 
@@ -230,5 +246,6 @@ int main(int argc, char *argv[]) {
 
     total_timer.stop();
     std::cout << "Total time for all scenes: " << total_timer.getElapsedTimeInMilliSec() << "ms." << std::endl;
-    std::cout << "Resolution was " << IMAGE_HEIGHT << "*" << IMAGE_WIDTH << ", with " << NUM_SAMPLES << "per pixel." << std::endl;
-    return 1;}
+    std::cout << "Resolution was " << IMAGE_HEIGHT << "*" << IMAGE_WIDTH << ", with " << NUM_SAMPLES << " samples per pixel." << std::endl;
+    return 1;
+}
