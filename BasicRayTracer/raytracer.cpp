@@ -154,127 +154,127 @@ int main(int argc, char *argv[]) {
     fun_scene_total_timer.start();
 
     fun_scene_build_timer.start();
-    loadScene("../Scenes2/shader1.ascii");
+    loadScene("../Scenes2/cornell.ascii");
     fun_scene_build_timer.stop();
 
     fun_scene_draw_timer.start();
-    render("hw3_shader1.bmp", 1);
+    render("cornell.bmp", 1);
     fun_scene_draw_timer.stop();
 
     cleanupScene();
     fun_scene_total_timer.stop();
-
-#pragma mark - Scene 1
-
-    Timer scene1_build_timer, scene1_draw_timer, scene1_total_timer;
-    scene1_total_timer.start();
-
-    scene1_build_timer.start();
-    loadScene("../Scenes2/test1.ascii");
-    scene1_build_timer.stop();
-
-    scene1_draw_timer.start();
-    render("hw3_test1.bmp",1);
-    scene1_draw_timer.stop();
-
-    cleanupScene();
-    scene1_total_timer.stop();
-
-#pragma mark Scene 2
-
-    Timer scene2_build_timer, scene2_draw_timer, scene2_total_timer;
-    scene2_total_timer.start();
-
-    scene2_build_timer.start();
-    loadScene("../Scenes2/test2.ascii");
-    scene2_build_timer.stop();
-
-    scene2_draw_timer.start();
-    render("hw3_test2.bmp", 1);
-    scene2_draw_timer.stop();
-
-    cleanupScene();
-    scene2_total_timer.stop();
-
-
-# pragma mark Scene 3
-
-    Timer scene3_build_timer, scene3_draw_timer, scene3_total_timer;
-    scene3_total_timer.start();
-
-    scene3_build_timer.start();
-    loadScene("../Scenes2/test3.ascii");
-    scene3_build_timer.stop();
-
-    scene3_draw_timer.start();
-    render("hw3_test3.bmp", 1);
-    scene3_draw_timer.stop();
-
-    cleanupScene();
-    scene3_total_timer.stop();
-
-#pragma mark - Scene 4
-
-    Timer scene4_build_timer, scene4_draw_timer, scene4_total_timer;
-    scene4_total_timer.start();
-
-    scene4_build_timer.start();
-    loadScene("../Scenes2/test4.ascii");
-    scene4_build_timer.stop();
-
-    scene4_draw_timer.start();
-    render("hw3_test4.bmp", 1);
-    scene4_draw_timer.stop();
-
-    cleanupScene();
-    scene4_total_timer.stop();
-
-
-#pragma mark - Scene 5
-
-    Timer scene5_build_timer, scene5_draw_timer, scene5_total_timer;
-    scene5_total_timer.start();
-
-    scene5_build_timer.start();
-    loadScene("../Scenes2/test5.ascii");
-    scene5_build_timer.stop();
-
-    scene5_draw_timer.start();
-    render("hw3_test5.bmp", 1);
-    scene5_draw_timer.stop();
-
-    cleanupScene();
-    scene5_total_timer.stop();
+//
+//#pragma mark - Scene 1
+//
+//    Timer scene1_build_timer, scene1_draw_timer, scene1_total_timer;
+//    scene1_total_timer.start();
+//
+//    scene1_build_timer.start();
+//    loadScene("../Scenes2/test1.ascii");
+//    scene1_build_timer.stop();
+//
+//    scene1_draw_timer.start();
+//    render("hw3_test1.bmp",1);
+//    scene1_draw_timer.stop();
+//
+//    cleanupScene();
+//    scene1_total_timer.stop();
+//
+//#pragma mark Scene 2
+//
+//    Timer scene2_build_timer, scene2_draw_timer, scene2_total_timer;
+//    scene2_total_timer.start();
+//
+//    scene2_build_timer.start();
+//    loadScene("../Scenes2/test2.ascii");
+//    scene2_build_timer.stop();
+//
+//    scene2_draw_timer.start();
+//    render("hw3_test2.bmp", 1);
+//    scene2_draw_timer.stop();
+//
+//    cleanupScene();
+//    scene2_total_timer.stop();
+//
+//
+//# pragma mark Scene 3
+//
+//    Timer scene3_build_timer, scene3_draw_timer, scene3_total_timer;
+//    scene3_total_timer.start();
+//
+//    scene3_build_timer.start();
+//    loadScene("../Scenes2/test3.ascii");
+//    scene3_build_timer.stop();
+//
+//    scene3_draw_timer.start();
+//    render("hw3_test3.bmp", 1);
+//    scene3_draw_timer.stop();
+//
+//    cleanupScene();
+//    scene3_total_timer.stop();
+//
+//#pragma mark - Scene 4
+//
+//    Timer scene4_build_timer, scene4_draw_timer, scene4_total_timer;
+//    scene4_total_timer.start();
+//
+//    scene4_build_timer.start();
+//    loadScene("../Scenes2/test4.ascii");
+//    scene4_build_timer.stop();
+//
+//    scene4_draw_timer.start();
+//    render("hw3_test4.bmp", 1);
+//    scene4_draw_timer.stop();
+//
+//    cleanupScene();
+//    scene4_total_timer.stop();
+//
+//
+//#pragma mark - Scene 5
+//
+//    Timer scene5_build_timer, scene5_draw_timer, scene5_total_timer;
+//    scene5_total_timer.start();
+//
+//    scene5_build_timer.start();
+//    loadScene("../Scenes2/test5.ascii");
+//    scene5_build_timer.stop();
+//
+//    scene5_draw_timer.start();
+//    render("hw3_test5.bmp", 1);
+//    scene5_draw_timer.stop();
+//
+//    cleanupScene();
+//    scene5_total_timer.stop();
 
     std::cout << "Fun scene. Load: " << fun_scene_build_timer.getElapsedTimeInMilliSec()
     << "ms, Draw: "  << fun_scene_draw_timer.getElapsedTimeInMilliSec()
     << "ms, Total: " << fun_scene_total_timer.getElapsedTimeInMilliSec()
     << "ms." << std::endl;
 
-    std::cout << "Scene1. Load: " << scene1_build_timer.getElapsedTimeInMilliSec()
-    << "ms, Draw: "  << scene1_draw_timer.getElapsedTimeInMilliSec()
-    << "ms, Total: " << scene1_total_timer.getElapsedTimeInMilliSec()
-    << "ms." << std::endl;
-
-    std::cout << "Scene2. Load: " << scene2_build_timer.getElapsedTimeInMilliSec()
-    << "ms, Draw: "  << scene2_draw_timer.getElapsedTimeInMilliSec()
-    << "ms, Total: " << scene2_total_timer.getElapsedTimeInMilliSec()
-    << "ms." << std::endl;
-
-    std::cout << "Scene3. Load: " << scene3_build_timer.getElapsedTimeInMilliSec()
-    << "ms, Draw: "  << scene3_draw_timer.getElapsedTimeInMilliSec()
-    << "ms, Total: " << scene3_total_timer.getElapsedTimeInMilliSec()
-    << "ms." << std::endl;
-
-    std::cout << "Scene4. Load: " << scene4_build_timer.getElapsedTimeInMilliSec()
-    << "ms, Draw: "  << scene4_draw_timer.getElapsedTimeInMilliSec()
-    << "ms, Total: " << scene4_total_timer.getElapsedTimeInMilliSec()
-    << "ms." << std::endl;
-
-    std::cout << "Scene5. Load: " << scene5_build_timer.getElapsedTimeInMilliSec()
-    << "ms, Draw: "  << scene5_draw_timer.getElapsedTimeInMilliSec()
-    << "ms, Total: " << scene5_total_timer.getElapsedTimeInMilliSec()
-    << "ms." << std::endl;
+//    std::cout << "Scene1. Load: " << scene1_build_timer.getElapsedTimeInMilliSec()
+//    << "ms, Draw: "  << scene1_draw_timer.getElapsedTimeInMilliSec()
+//    << "ms, Total: " << scene1_total_timer.getElapsedTimeInMilliSec()
+//    << "ms." << std::endl;
+//
+//    std::cout << "Scene2. Load: " << scene2_build_timer.getElapsedTimeInMilliSec()
+//    << "ms, Draw: "  << scene2_draw_timer.getElapsedTimeInMilliSec()
+//    << "ms, Total: " << scene2_total_timer.getElapsedTimeInMilliSec()
+//    << "ms." << std::endl;
+//
+//    std::cout << "Scene3. Load: " << scene3_build_timer.getElapsedTimeInMilliSec()
+//    << "ms, Draw: "  << scene3_draw_timer.getElapsedTimeInMilliSec()
+//    << "ms, Total: " << scene3_total_timer.getElapsedTimeInMilliSec()
+//    << "ms." << std::endl;
+//
+//    std::cout << "Scene4. Load: " << scene4_build_timer.getElapsedTimeInMilliSec()
+//    << "ms, Draw: "  << scene4_draw_timer.getElapsedTimeInMilliSec()
+//    << "ms, Total: " << scene4_total_timer.getElapsedTimeInMilliSec()
+//    << "ms." << std::endl;
+//
+//    std::cout << "Scene5. Load: " << scene5_build_timer.getElapsedTimeInMilliSec()
+//    << "ms, Draw: "  << scene5_draw_timer.getElapsedTimeInMilliSec()
+//    << "ms, Total: " << scene5_total_timer.getElapsedTimeInMilliSec()
+//    << "ms." << std::endl;
 
 
     total_timer.stop();
