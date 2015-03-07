@@ -115,7 +115,7 @@ void Framebuffer::renderLens(char* filename, const float sensorDistance){
                     Pos lensPosition = LensCenter + LensX * jitter(0.8) // random along x-axis [-1,1]
                                                   + LensY * jitter(0.8);
                     Vec3f rayDirection = (focusPoint - lensPosition);
-                    Colr sample  = Ray(lensPosition, rayDirection).trace(10);
+                    Colr sample  = Ray(lensPosition, rayDirection).trace(1);
                     currentPixel.samples.push_back(sample);
                 }
             }
@@ -165,7 +165,7 @@ void Framebuffer::renderPinhole(char* filename, const float sensorDistance){
                     Pos samplePosition = PixelCenterPosition
                         + X * sampleOffsetX * sampleCountX
                         + Y * sy * sampleOffsetY * sampleCountY;
-                    Colr sample = Ray(E, samplePosition - E).trace(10);
+                    Colr sample = Ray(E, samplePosition - E).trace(5);
                     p.samples.push_back(sample);
                 }
             }

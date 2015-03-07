@@ -1,10 +1,20 @@
 #include "Ray.h"
 #include "Sphere.h"
+#include "Mesh.h"
 extern void defaultShader(Ray &ray);
 extern SceneIO *scene;
 extern std::vector<Primitive*> objects;
+extern std::vector<Mesh*> areaLights;
 extern std::vector<LightIO*> lights;
 size_t Ray::counter = 0;
+
+float randf(){
+    return ((float)rand()/(float)RAND_MAX);
+}
+
+float sgn(float x){
+    return (x >= 0)*2-1;
+}
 Ray::Ray(Pos startPosition, Vec3f direction)
 :_id(++counter), startPosition(startPosition),
 direction(direction.normalize()),
@@ -24,8 +34,170 @@ Pos Ray::intersectionPoint() const {
 }
 
 Colr Ray::trace(int bounces){
-    return trace(bounces, std::unordered_set<Primitive*>());
+    return pathTrace(bounces, std::unordered_set<Primitive*>());
 }
+
+
+Vec3f Ray::uniformSampleHemisphere(const Vec3f normal)
+{
+    float u1 = randf(), u2 = randf();
+    const float r = sqrt(1.0f - u1 * u1);
+    const float phi = 2 * M_PI * u2;
+    Vec3f randVector = Vec3f(cos(phi) * r, sin(phi) * r, u1);
+    float sign = sgn(Vec3f::dot(randVector, normal));
+    return randVector * sign;
+}
+
+
+/*
+Vec3f Ray::diffuseVector(Vec3f normal){
+    Vec3f random = uniformSampleHemisphere(randf(), randf());
+    Vec3f tangent(normal.y,-1.0*normal.x,0);
+    Vec3f bitangent = normal.crossproduct(tangent);
+    tangent = tangent.normalize();
+    bitangent = bitangent.normalize();
+    //matrix multiplication
+    return (bitangent.scalarmultiply(hemispherepoint.x)).add((tangent.scalarmultiply(hemispherepoint.y)).add(normal.scalarmultiply(hemispherepoint.z)));
+}
+}
+
+
+Vec3f Ray::cosineSampleHemisphere(float u1, float u2)
+{
+    const float r = sqrt(u1);
+    const float theta = 2 * M_PI * u2;
+    const float x = r * cos(theta);
+    const float y = r * sin(theta);
+    return Vec3f(x, y, sqrt(fmax(0.0f, 1 - u1)));
+} */
+
+Pos randomPointOnTriangle(const Mesh* mesh){
+    Triangle triangle = *mesh->triangles[rand()%mesh->triangles.size()];
+//    Vec3f result = triangle.p0;
+//    return result;
+    // Annoying rejection sampling :(
+    float r1 = 1.0, r2 = 1.0;
+    while(r1 + r2 > 1.0){
+        r1 = randf();
+        r2 = randf();
+    }
+    Colr result = triangle.p0 + triangle.u * r1 + triangle.v * r2;
+    return result;
+}
+
+float attenuationFactorAreaLight(const float distance) {
+    float c1 = 0.25;
+    float c2 = 0.1;
+    float c3 = 0.01;
+    return fmin(1.0, 1.0 / (c1 + c2*distance + c3*distance));
+}
+
+
+
+Colr Ray::pathTrace(int bounces, std::unordered_set<Primitive*> insideObjects){
+    Colr result = Colr(0,0,0);
+    if(bounces <= 0){ return result; }
+//    if(randf() > 0.95){ return result; }
+    // Find which object we intersect closest:
+    for ( Primitive* object : objects ) {
+        object->intersect(*this);
+    }
+    if(t_max == INFINITY){ // No hit.
+        return BACKGROUND_COLOR;
+    }
+    Colr emissColor = Colr(material.emissColor);
+    result = directLight() + indirectLight(bounces, insideObjects) + emissColor;
+    result.capColor();
+    return result;
+
+/*
+    Colr reflectionColor = Colr(0,0,0);
+    if(isReflective()) {
+        reflectionColor = reflection(intersectionPoint(), bounces-1, insideObjects);
+    }
+
+    Colr refractionColor = Colr(0,0,0);
+    if(isTransparent()){
+        // If we are entering a new object, add it to the set.
+        std::unordered_set<Primitive*> mySet(insideObjects);
+        if(enteringCurrentObject){
+            mySet.insert(currentObject);
+        }
+        else {
+            mySet.erase(currentObject);
+        }
+        float ior_a = isInside ? IOR_GLASS : IOR_AIR;
+        float ior_b = mySet.size() != 0 ? IOR_GLASS : IOR_AIR;
+        refractionColor = refraction(intersectionPoint(), bounces-1, ior_a, ior_b, mySet, insideObjects);
+    }
+ 
+ */
+//    Colr result = diffuseColor + specularColor + reflectionColor + refractionColor + emisColor;
+}
+Colr Ray::indirectLight(const int bounces, const std::unordered_set<Primitive*> insideObjects){
+    Vec3f randomDirection = uniformSampleHemisphere(intersectionNormal);
+    Ray indirectray = Ray(intersectionPoint(), randomDirection);
+    Colr indirectLight = indirectray.pathTrace(bounces-1, insideObjects)
+    * fmax(0,Vec3f::dot(randomDirection, intersectionNormal)) * Colr(material.diffColor);
+
+    float attenuation = attenuationFactorAreaLight((indirectray.intersectionPoint() - intersectionPoint()).length());
+    return indirectLight * attenuation;
+}
+
+
+Colr Ray::directLight(){
+    Colr diffuseColor;
+    Mesh * light = areaLights[random()%areaLights.size()];
+    Colr color = light->materials[0].emissColor;
+    Vec3f lightDirection = (randomPointOnTriangle(light) - intersectionPoint());
+
+    float lightDistance = lightDirection.length();
+    lightDirection = lightDirection.normalize();
+    float attenuationFactor = attenuationFactorAreaLight(lightDistance);
+
+
+    Vec3f shadowFactor = areaShadow(lightDirection, lightDistance, light);
+    Vec3f directLight = diffuse(lightDirection, color) * shadowFactor * attenuationFactor;
+    return directLight;
+}
+
+Colr Ray::areaShadow(const Vec3f &L, const float lightDistance, Mesh* light) const {
+    Colr shadowFactor = Colr(1,1,1);
+    for( auto object : objects){
+        Ray shadowRay = Ray(intersectionPoint() + intersectionNormal*BUMP_EPSILON , L);
+        if(object->intersect(shadowRay)){
+            if(shadowRay.currentObject == light){ continue; }
+            Vec3f intersectVector = shadowRay.intersectionPoint() - shadowRay.startPosition;
+            if( (intersectVector.length() >= lightDistance) ){ continue; }
+            if(shadowRay.material.ktran < 0.001f){return Colr(0,0,0);}
+            shadowFactor = shadowFactor * (Colr(shadowRay.material.diffColor).normalizeColor()) * shadowRay.material.ktran;
+        }
+    }
+    return shadowFactor;
+}
+
+
+Colr Ray::shadow(const Vec3f &L, const float lightDistance) const {
+    Colr shadowFactor = Colr(1,1,1);
+    for( auto object : objects){
+        Ray shadowRay = Ray(intersectionPoint() + intersectionNormal*BUMP_EPSILON , L);
+        if(object->intersect(shadowRay)){
+            if(shadowRay.material.emissColor[0] > 0){ continue; }
+            Vec3f intersectVector = shadowRay.intersectionPoint() - shadowRay.startPosition;
+            if( (intersectVector.length() >= lightDistance) ){ continue; }
+            if(shadowRay.material.ktran < 0.001f){return Colr(0,0,0);}
+            shadowFactor = shadowFactor * (Colr(shadowRay.material.diffColor).normalizeColor()) * shadowRay.material.ktran;
+        }
+    }
+    return shadowFactor;
+}
+
+Colr Ray::diffuse(const Vec3f &L, const Colr &lightColor) const {
+    Colr result = Colr(material.diffColor) * fmax(0,Vec3f::dot(L, intersectionNormal)) * lightColor;
+    return result * (1.0-material.ktran);
+}
+
+
 
 Colr Ray::trace(int bounces, std::unordered_set<Primitive*> insideObjects){
     if(bounces <= 0){return Colr(0,0,0);}
@@ -99,8 +271,8 @@ Colr Ray::trace(int bounces, std::unordered_set<Primitive*> insideObjects){
         float ior_b = mySet.size() != 0 ? IOR_GLASS : IOR_AIR;
         refractionColor = refraction(intersectionPoint(), bounces-1, ior_a, ior_b, mySet, insideObjects);
     }
-
-    Colr result = ambientColor + diffuseColor + specularColor + reflectionColor + refractionColor;
+    Colr emisColor = Colr(material.emissColor);
+    Colr result = ambientColor + diffuseColor + specularColor + reflectionColor + refractionColor + emisColor;
     result.capColor();
     return result;
 }
@@ -114,6 +286,7 @@ bool Ray::isReflective() const {
 bool Ray::isTransparent() const {
     return material.ktran >= 0.001 && t_max < INFINITY;
 }
+
 
 Colr Ray::reflection(const Pos point, const int bounces, const std::unordered_set<Primitive*> mySet) const {
     Vec3f incident = Vec3f::normalize(direction);
@@ -146,25 +319,6 @@ Colr Ray::refraction(const Pos point, const int bounces, const float ior_a, cons
 }
 
 
-Colr Ray::shadow(const Vec3f &L, const float lightDistance) const {
-    Colr shadowFactor = Colr(1,1,1);
-    for( auto object : objects){
-        Ray shadowRay = Ray(intersectionPoint() + intersectionNormal*BUMP_EPSILON , L);
-        if(object->intersect(shadowRay)){
-            Vec3f intersectVector = shadowRay.intersectionPoint() - shadowRay.startPosition;
-            if( (intersectVector.length() >= lightDistance) ){ continue; }
-            if(shadowRay.material.ktran < 0.001f){return Colr(0,0,0);}
-            shadowFactor = shadowFactor * (Colr(shadowRay.material.diffColor).normalizeColor()) * shadowRay.material.ktran;
-        }
-    }
-    return shadowFactor;
-}
-
-Colr Ray::diffuse(const Vec3f &L, Colr &lightColor) const {
-    Colr result = Colr(material.diffColor) * fmax(0,Vec3f::dot(L,intersectionNormal)) * lightColor;
-    return result * (1.0-material.ktran);
-}
-
 Colr Ray::specular(const Vec3f &L, Colr &color) const {
     float q = material.shininess * 30.0;
     Colr Ks = Colr(material.specColor);
@@ -176,6 +330,8 @@ Colr Ray::specular(const Vec3f &L, Colr &color) const {
     return Ks * pow * color;
 
 }
+
+
 
 float Ray::attenuationFactor(const Pos point, const LightIO* light) const {
     if(light->type == DIRECTIONAL_LIGHT){ return 1.0;}

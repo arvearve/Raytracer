@@ -63,7 +63,7 @@ public:
     p2(Vec3f(polygon.vert[2].pos)),
     u(Vec3f(polygon.vert[1].pos) - Vec3f(polygon.vert[0].pos)),
     v(Vec3f(polygon.vert[2].pos) - Vec3f(polygon.vert[0].pos))
-    {
+{
         bounds = getBounds();
         uu = Vec3f::dot(u,u);
         uv = Vec3f::dot(u,v);

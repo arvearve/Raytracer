@@ -11,10 +11,9 @@
 #include "Ray.h"
 #include "kdTree.h"
 #include "Framebuffer.h"
-#define IMAGE_WIDTH 1500
-#define IMAGE_HEIGHT 1500
-#define NUM_SAMPLES 1
-#define MAX_BOUNCES	10
+#define IMAGE_WIDTH 512
+#define IMAGE_HEIGHT 512
+#define NUM_SAMPLES 512
 #define SENSOR_DISTANCE 1
 
 typedef unsigned char u08;
@@ -22,6 +21,7 @@ typedef unsigned char u08;
 SceneIO *scene = NULL;
 std::vector<LightIO*> lights;
 std::vector<Primitive*> objects;
+std::vector<Mesh*> areaLights;
 
 #pragma mark - Shaders
 void mirror(Ray &ray, const bool on);
@@ -37,7 +37,6 @@ void defaultShader(Ray &ray){
             case 1:
                 earth(ray, true);
                 mirror(ray, CHECKERBOARD( ray.u/2, ray.v/2));
-
                 break;
             case 2:
                 earth(ray, true);
@@ -112,9 +111,13 @@ static void loadScene(char *name) {
             MaterialIO* material = nextObj->material;
             Mesh* mesh = new Mesh(*polyset, material, nextObj->numMaterials, nextObj->name);
             objects.push_back(mesh);
+            if(mesh->materials[0].emissColor[0] > 0){
+                areaLights.push_back(mesh);
+            }
         }
         nextObj = nextObj->next;
     }
+
     LightIO *nextLight = scene->lights;
     while (nextLight != nullptr) {
         lights.push_back(nextLight);
@@ -154,11 +157,11 @@ int main(int argc, char *argv[]) {
     fun_scene_total_timer.start();
 
     fun_scene_build_timer.start();
-    loadScene("../Scenes2/cornell.ascii");
+    loadScene("../Scenes2/cornell_arealight.ascii");
     fun_scene_build_timer.stop();
 
     fun_scene_draw_timer.start();
-    render("cornell.bmp", 1);
+    render("cornell.bmp", NUM_SAMPLES);
     fun_scene_draw_timer.stop();
 
     cleanupScene();
