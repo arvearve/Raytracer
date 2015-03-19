@@ -25,6 +25,7 @@ void Pixel::filter(){
     filteredColor.y = filteredColor.y / count;
     filteredColor.z = filteredColor.z / count;
     samples.clear();
+    filteredColor.capColor();
 }
 
 

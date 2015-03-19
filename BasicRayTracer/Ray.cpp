@@ -1,6 +1,7 @@
 #include "Ray.h"
 #include "Sphere.h"
 #include "Mesh.h"
+#define INV_SQRT_3 0.577350269
 extern void defaultShader(Ray &ray);
 extern SceneIO *scene;
 extern std::vector<Primitive*> objects;
@@ -105,20 +106,43 @@ Colr Ray::pathTrace(int bounces, std::unordered_set<Primitive*> insideObjects){
     if(t_max == INFINITY){ // No hit.
         return BACKGROUND_COLOR;
     }
-    Colr emissColor = Colr(material.emissColor);
-    result = directLight() + indirectLight(bounces, insideObjects) + emissColor;
-    result.capColor();
-    return result;
+    defaultShader(*this);
 
-/*
-    Colr reflectionColor = Colr(0,0,0);
-    if(isReflective()) {
-        reflectionColor = reflection(intersectionPoint(), bounces-1, insideObjects);
+    if(material.emissColor[0] > 0){
+        return Colr(material.emissColor);
     }
 
-    Colr refractionColor = Colr(0,0,0);
-    if(isTransparent()){
-        // If we are entering a new object, add it to the set.
+
+    /* Diffuse or specular reflection, or transmitted?  Should sum to <= sqrt(3)*/
+    float diffuseProb = Colr(material.diffColor).length() * INV_SQRT_3;
+    float reflectProb = Colr(material.specColor).length() * INV_SQRT_3;
+    float transmitProb = material.ktran;
+
+    float totalProb = diffuseProb + reflectProb + transmitProb;
+    diffuseProb /= totalProb;
+    reflectProb /= totalProb;
+    transmitProb /= totalProb;
+
+    float r = randf();
+    Vec3f direction;
+
+    if( r < diffuseProb){
+        // Diffuse reflection
+        direction = uniformSampleHemisphere(intersectionNormal);
+        result = directLight() + indirectLight(direction, bounces, insideObjects);
+        return result;
+    } else if (r < diffuseProb + reflectProb){
+        // Specular reflection
+        return reflection(intersectionPoint(), bounces-1, insideObjects);
+    } else {
+        //refraction
+        // Transmitted
+        bool isInside = insideObjects.size() > 0;
+        bool enteringCurrentObject = insideObjects.find(currentObject) == insideObjects.end();
+        if(!enteringCurrentObject){
+            intersectionNormal = intersectionNormal * -1.0;
+        }
+
         std::unordered_set<Primitive*> mySet(insideObjects);
         if(enteringCurrentObject){
             mySet.insert(currentObject);
@@ -128,17 +152,17 @@ Colr Ray::pathTrace(int bounces, std::unordered_set<Primitive*> insideObjects){
         }
         float ior_a = isInside ? IOR_GLASS : IOR_AIR;
         float ior_b = mySet.size() != 0 ? IOR_GLASS : IOR_AIR;
-        refractionColor = refraction(intersectionPoint(), bounces-1, ior_a, ior_b, mySet, insideObjects);
+        return refraction(intersectionPoint(), bounces-1, ior_a, ior_b, insideObjects, insideObjects);
     }
- 
- */
-//    Colr result = diffuseColor + specularColor + reflectionColor + refractionColor + emisColor;
+
 }
-Colr Ray::indirectLight(const int bounces, const std::unordered_set<Primitive*> insideObjects){
-    Vec3f randomDirection = uniformSampleHemisphere(intersectionNormal);
-    Ray indirectray = Ray(intersectionPoint(), randomDirection);
+
+
+
+Colr Ray::indirectLight(const Vec3f direction, const int bounces, const std::unordered_set<Primitive*> insideObjects){
+    Ray indirectray = Ray(intersectionPoint(), direction);
     Colr indirectLight = indirectray.pathTrace(bounces-1, insideObjects)
-    * fmax(0,Vec3f::dot(randomDirection, intersectionNormal)) * Colr(material.diffColor);
+    * fmax(0,Vec3f::dot(direction, intersectionNormal)) * Colr(material.diffColor);
 
     float attenuation = attenuationFactorAreaLight((indirectray.intersectionPoint() - intersectionPoint()).length());
     return indirectLight * attenuation;
@@ -199,7 +223,7 @@ Colr Ray::diffuse(const Vec3f &L, const Colr &lightColor) const {
 
 
 
-Colr Ray::trace(int bounces, std::unordered_set<Primitive*> insideObjects){
+Colr Ray::traceeee(int bounces, std::unordered_set<Primitive*> insideObjects){
     if(bounces <= 0){return Colr(0,0,0);}
     // Find which object we intersect closest:
     for ( Primitive* object : objects ) {
@@ -293,9 +317,8 @@ Colr Ray::reflection(const Pos point, const int bounces, const std::unordered_se
     double cosI = -Vec3f::dot(intersectionNormal, incident);
     Vec3f reflectedDirection =  incident + intersectionNormal * cosI * 2;
     Ray reflectionRay = Ray(point + intersectionNormal*BUMP_EPSILON, reflectedDirection);
-    Colr reflectionColor = reflectionRay.trace(bounces, mySet);
-    return reflectionColor * Colr(material.specColor);
-
+    Colr reflectionColor = reflectionRay.pathTrace(bounces, mySet);
+    return reflectionColor;
 }
 
 Colr Ray::refraction(const Pos point, const int bounces, const float ior_a, const float ior_b, const std::unordered_set<Primitive*> mySet, const std::unordered_set<Primitive*> oldSet){
@@ -310,12 +333,11 @@ Colr Ray::refraction(const Pos point, const int bounces, const float ior_a, cons
     Vec3f newDirection = incident * -(1.0/n) - intersectionNormal * (cosThetaT - (1.0/n) * cosThetaI);
 
     if (thetaI >= asin(ior_b/ior_a)) {
-        return Ray(intersectionPoint()+intersectionNormal*BUMP_EPSILON, newDirection).trace(bounces-1, oldSet);
+        return Ray(intersectionPoint()+intersectionNormal*BUMP_EPSILON, newDirection).pathTrace(bounces-1, oldSet);
     }
     else{
-        return Ray(intersectionPoint() - intersectionNormal * BUMP_EPSILON, newDirection).trace(bounces-1, mySet) * material.ktran;
+        return Ray(intersectionPoint() - intersectionNormal * BUMP_EPSILON, newDirection).pathTrace(bounces-1, mySet);
     }
-
 }
 
 

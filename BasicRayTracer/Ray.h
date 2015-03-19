@@ -12,7 +12,7 @@ typedef void(*surface_shader)(Ray &ray);
 #define BACKGROUND_COLOR Colr(0,0,0)
 #define BUMP_EPSILON 0.0001
 #define IOR_AIR 1.0
-#define IOR_GLASS 1.5
+#define IOR_GLASS 1.4  
 
 class Mesh;
 class Ray
@@ -41,7 +41,7 @@ public:
     Primitive* currentObject;
     surface_shader surfaceShader;
     Pos intersectionPoint() const;
-    Colr trace(int bounces, std::unordered_set<Primitive*> insideObjects);
+    Colr traceeee(int bounces, std::unordered_set<Primitive*> insideObjects);
     Colr pathTrace(int bounces, std::unordered_set<Primitive*> insideObjects);
     Colr trace(int bounces);
     Colr diffuse(const Vec3f &L, const Colr &color) const;
@@ -59,7 +59,7 @@ public:
 
     static Vec3f uniformSampleHemisphere(const Vec3f normal);
     static Vec3f cosineSampleHemisphere(float u1, float u2);
-    Colr indirectLight(const int bounces, const std::unordered_set<Primitive*> insideObjects);
+    Colr indirectLight(const Vec3f direction, const int bounces, const std::unordered_set<Primitive*> insideObjects);
     Colr directLight();
 
 

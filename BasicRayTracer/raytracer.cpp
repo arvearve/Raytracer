@@ -13,7 +13,7 @@
 #include "Framebuffer.h"
 #define IMAGE_WIDTH 512
 #define IMAGE_HEIGHT 512
-#define NUM_SAMPLES 512
+#define NUM_SAMPLES 64
 #define SENSOR_DISTANCE 1
 
 typedef unsigned char u08;
@@ -40,6 +40,10 @@ void defaultShader(Ray &ray){
                 break;
             case 2:
                 earth(ray, true);
+            case 3:
+                ray.material.diffColor[0] = CHECKERBOARD(ray.u, ray.v);
+                ray.material.diffColor[1] = CHECKERBOARD(ray.u, ray.v);
+                ray.material.diffColor[2] = CHECKERBOARD(ray.u, ray.v);
             default:
                 break;
         }

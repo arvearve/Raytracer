@@ -41,7 +41,7 @@ private:
     int WIDTH;
     int HEIGHT;
     int samples;
-
+    float maxIntensity;
     void initblack();
 public:
     Framebuffer(const int w, const int h, const int samples):WIDTH(w), HEIGHT(h), samples(sqrt(samples)){};

@@ -567,11 +567,13 @@ read_objectA(ObjIO *obj, FILE *fp)
   if (strcmp(word,"NULL") == 0) {
     obj->name = NULL;
   } else {
-    if (word[0] != '\"' || word[strlen(word)-2] != '\"' ) {
+    if (word[0] != '\"' || word[strlen(word)-1] != '\"' ) {
+        char start = word[0];
+        char end = word[strlen(word)-1];
       printf("Error in object name format: %s\n", word);
       obj->name = NULL;
     } else {
-      word[strlen(word)-2] = '\0';	/* eat trailing quote */
+      word[strlen(word)-1] = '\0';	/* eat trailing quote */
 //      obj->name = _strdup(word+1);	/* eat leading quote */
       obj->name = strdup(word+1);	/* eat leading quote */
     }
