@@ -95,7 +95,7 @@ public:
 
         return Box(Vec3f(xmin, ymin, zmin), Vec3f(xmax, ymax, zmax));
     }
-    
+    float area();
 };
 
 #endif /* defined(__BasicRayTracer__box_triangle__) */

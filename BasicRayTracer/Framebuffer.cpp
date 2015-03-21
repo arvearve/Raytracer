@@ -5,14 +5,71 @@
 //  Created by Arve Nygård on 26/02/15.
 //  Copyright (c) 2015 Arve Nygård. All rights reserved.
 //
-
+#define INV_GAMMA 0.45 //    gamma: 1 / 2.2
 #include "Framebuffer.h"
-
+#include "Mesh.h"
 float Framebuffer::jitter(const float distance) const{
     return -distance + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(distance*2)));
 }
 
 extern SceneIO *scene;
+
+
+
+void Framebuffer::renderPinhole(char* filename, const float sensorDistance){
+
+
+
+    Pos E = Pos(scene->camera->position); // Eye position
+    Vec3f V = Vec3f(scene->camera->viewDirection).normalize(); // View direction
+    Vec3f U = Vec3f(scene->camera->orthoUp).normalize(); // Camera Up vector (orthoUp)
+
+
+    int w = WIDTH;
+    int h = HEIGHT;
+    float fovVertical = scene->camera->verticalFOV;
+    float fovHorizontal = fovVertical * ((float)w/(float)h);
+
+    Vec3f A = Vec3f::cross(V, U); // Right vector
+    Vec3f B = Vec3f::cross(A, V); // Up vector aligned with image plane.
+    A = A.normalize();
+    B = B.normalize();
+    float c = sensorDistance;
+    Pos M = E + (V*c); // Middle of image plane.
+    Vec3f Y = B * (c * tan(fovVertical / 2.0));
+    Vec3f X = A * (c * tan(fovHorizontal / 2.0));
+
+    float dw = 1.0/WIDTH;
+    float dh = 1.0/HEIGHT;
+
+    float sampleOffsetX = 1.0/(samples*WIDTH);
+    float sampleOffsetY = 1.0/(samples*HEIGHT);
+
+    for (int j = 0; j < HEIGHT; j++) {
+        std::cout << "Rendering line " << j << std::endl;
+        for (int i = 0; i < WIDTH; i++) {
+            float sx = (i) * dw;
+            float sy = (j) * dh;
+            Pos PixelCenterPosition = M + X*(2.0 * sx - 1.0) + Y * (2.0 * sy - 1.0);
+            Pixel p = Pixel(samples, PixelCenterPosition);
+            for(int sampleCountY = 0; sampleCountY < samples; sampleCountY++){
+                for(int sampleCountX = 0; sampleCountX < samples; sampleCountX++){
+                    Pos samplePosition = PixelCenterPosition
+                    + X * sampleOffsetX * sampleCountX
+                    + Y * sy * sampleOffsetY * sampleCountY;
+                    Colr sample = Ray(E, samplePosition - E).trace(5);
+                    p.samples.push_back(sample);
+                }
+            }
+            p.filter();
+            maxIntensity = fmax(maxIntensity, p.filteredColor.length());
+            pixels.push_back(p);
+        }
+    }
+    filter();
+    saveFile(filename, false);
+}
+
 
 void Pixel::filter(){
     int count = samples.size();
@@ -21,14 +78,22 @@ void Pixel::filter(){
         filteredColor.y += sample.y;
         filteredColor.z += sample.z;
     }
-    filteredColor.x = filteredColor.x / count;
-    filteredColor.y = filteredColor.y / count;
-    filteredColor.z = filteredColor.z / count;
     samples.clear();
-    filteredColor.capColor();
 }
 
 
+void Framebuffer::filter(){
+    // Precondition: maxIntensity is the magnitude of the brightest channel of the brightest pixel. Renormalize so this is equal to 1.
+    // Linear mapping for now.
+    // http://stackoverflow.com/questions/1456000/rescaling-ranges
+    float factor = 1.0/maxIntensity;
+    for (Pixel &p: pixels) {
+        p.filteredColor = p.filteredColor * factor * 1.73;
+        p.filteredColor.x = powf(p.filteredColor.x,INV_GAMMA);
+        p.filteredColor.y = powf(p.filteredColor.y,INV_GAMMA);
+        p.filteredColor.z = powf(p.filteredColor.z,INV_GAMMA);
+    }
+}
 
 void Framebuffer::saveFile(char *filename, bool flip){
 
@@ -127,54 +192,6 @@ void Framebuffer::renderLens(char* filename, const float sensorDistance){
 
     // Filter samples
     saveFile(filename, true);
-}
-
-void Framebuffer::renderPinhole(char* filename, const float sensorDistance){
-    Pos E = Pos(scene->camera->position); // Eye position
-    Vec3f V = Vec3f(scene->camera->viewDirection).normalize(); // View direction
-    Vec3f U = Vec3f(scene->camera->orthoUp).normalize(); // Camera Up vector (orthoUp)
-
-
-    int w = WIDTH;
-    int h = HEIGHT;
-    float fovVertical = scene->camera->verticalFOV;
-    float fovHorizontal = fovVertical * ((float)w/(float)h);
-
-    Vec3f A = Vec3f::cross(V, U); // Right vector
-    Vec3f B = Vec3f::cross(A, V); // Up vector aligned with image plane.
-    A = A.normalize();
-    B = B.normalize();
-    float c = sensorDistance;
-    Pos M = E + (V*c); // Middle of image plane.
-    Vec3f Y = B * (c * tan(fovVertical / 2.0));
-    Vec3f X = A * (c * tan(fovHorizontal / 2.0));
-
-    float dw = 1.0/WIDTH;
-    float dh = 1.0/HEIGHT;
-
-    float sampleOffsetX = 1.0/(samples*WIDTH);
-    float sampleOffsetY = 1.0/(samples*HEIGHT);
-
-    for (int j = 0; j < HEIGHT; j++) {
-        for (int i = 0; i < WIDTH; i++) {
-            float sx = (i) * dw;
-            float sy = (j) * dh;
-            Pos PixelCenterPosition = M + X*(2.0 * sx - 1.0) + Y * (2.0 * sy - 1.0);
-            Pixel p = Pixel(samples, PixelCenterPosition);
-            for(int sampleCountY = 0; sampleCountY < samples; sampleCountY++){
-                for(int sampleCountX = 0; sampleCountX < samples; sampleCountX++){
-                    Pos samplePosition = PixelCenterPosition
-                        + X * sampleOffsetX * sampleCountX
-                        + Y * sy * sampleOffsetY * sampleCountY;
-                    Colr sample = Ray(E, samplePosition - E).trace(5);
-                    p.samples.push_back(sample);
-                }
-            }
-            p.filter();
-            pixels.push_back(p);
-        }
-    }
-    saveFile(filename, false);
 }
 
 

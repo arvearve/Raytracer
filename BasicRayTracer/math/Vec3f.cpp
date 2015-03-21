@@ -36,6 +36,23 @@ Colr Vec3f::capColor(){
     return *this;
 }
 
+/* Axis system where Z is normal to the surface, X and Y are perpendicular. */
+void Vec3f::getBasis(const Vec3f &N, Vec3f &outX, Vec3f &outY, Vec3f &outZ){
+    outZ = N;
+    Vec3f axis;
+    if(fabs(N.x) < fabs(N.y) && fabs(N.x)< fabs(N.z)) {
+        axis = Vec3f(1.0f, 0.0f, 0.0f);
+    }
+    else if (fabs(N.y) < fabs(N.z)) {
+        axis = Vec3f(0.0f, 1.0f, 0.0f);
+    }
+    else {
+        axis = Vec3f(0.0f, 0.0f, 1.0f);
+    }
+    outX = Vec3f::cross(N, axis).normalize();
+    outY = Vec3f::cross(outX, outZ).normalize();
+}
+
 
 std::ostream& operator<<(std::ostream &strm, const Vec3f &vec) {
     return strm << "[" << vec.x  << vec.y << vec.z << "]";

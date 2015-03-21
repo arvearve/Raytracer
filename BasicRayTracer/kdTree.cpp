@@ -22,7 +22,6 @@ void Node::traverse(Ray &ray, float t_min, float t_max)
             triangle->intersect(ray);
         }
     }
-
     else{
         //float t_split = distanceAlongRayToPlane(ray);
         float t_split = (splitPlane.pos - ray.startPosition[splitPlane.axis]) * (ray.direction[splitPlane.axis] == 0 ? INFINITY : ray.inv_direction[splitPlane.axis]);

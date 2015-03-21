@@ -6,6 +6,7 @@
 #include <unordered_set>
 #include "Vec3f.h"
 #include "scene_io.h"
+
 class Primitive;
 class Ray;
 typedef void(*surface_shader)(Ray &ray);
@@ -15,6 +16,7 @@ typedef void(*surface_shader)(Ray &ray);
 #define IOR_GLASS 1.4  
 
 class Mesh;
+class PhotonMap;
 class Ray
 {
 
@@ -50,15 +52,18 @@ public:
 
     Colr reflection(const Pos point, const int bounces, std::unordered_set<Primitive*> mySet) const;
     Colr refraction(const Pos point, const int bounces, const float ior_a, const float ior_b, std::unordered_set<Primitive*> mySet, std::unordered_set<Primitive*> oldSet);
-
+    Ray reflectionRay(const Pos point) const;
+    Ray refractionRay(const Pos point, const float ior_a, const float ior_b) const;
     Colr shadow(const Vec3f &L, const float lightDistance) const;
     Colr areaShadow(const Vec3f &L, const float lightDistance, Mesh* light) const;
     float attenuationFactor(const Pos point, const LightIO* light) const;
     Ray(Pos startPosition, Vec3f direction);
 
+    static PhotonMap buildPhotonMap();
+    void photonTrace(Colr flux, PhotonMap &photonMap, const int bounces);
 
     static Vec3f uniformSampleHemisphere(const Vec3f normal);
-    static Vec3f cosineSampleHemisphere(float u1, float u2);
+    static Vec3f cosineSampleHemisphere(const Vec3f &direction);
     Colr indirectLight(const Vec3f direction, const int bounces, const std::unordered_set<Primitive*> insideObjects);
     Colr directLight();
 

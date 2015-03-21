@@ -16,12 +16,8 @@
 #include "Vec3f.h"
 #include "Ray.h"
 #include "scene_io.h"
+#include "PhotonMap.h"
 #include "EasyBMP.h"
-
-/* Generate a random value between -distance and distance.
- Used to jitter sample points inside their subpixel.
- */
-
 
 struct Pixel {
 

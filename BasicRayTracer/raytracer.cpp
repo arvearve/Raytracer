@@ -11,9 +11,10 @@
 #include "Ray.h"
 #include "kdTree.h"
 #include "Framebuffer.h"
+#include "PhotonMap.h"
 #define IMAGE_WIDTH 512
 #define IMAGE_HEIGHT 512
-#define NUM_SAMPLES 64
+#define NUM_SAMPLES 1
 #define SENSOR_DISTANCE 1
 
 typedef unsigned char u08;
@@ -22,7 +23,7 @@ SceneIO *scene = NULL;
 std::vector<LightIO*> lights;
 std::vector<Primitive*> objects;
 std::vector<Mesh*> areaLights;
-
+PhotonMap pMap;
 #pragma mark - Shaders
 void mirror(Ray &ray, const bool on);
 void earth(Ray &ray, const bool on);
@@ -44,6 +45,10 @@ void defaultShader(Ray &ray){
                 ray.material.diffColor[0] = CHECKERBOARD(ray.u, ray.v);
                 ray.material.diffColor[1] = CHECKERBOARD(ray.u, ray.v);
                 ray.material.diffColor[2] = CHECKERBOARD(ray.u, ray.v);
+            case 4:
+                ray.material.diffColor[0] = CHECKERBOARD(ray.u*3, ray.v*3);
+                ray.material.diffColor[1] = CHECKERBOARD(ray.u*3, ray.v*3);
+                ray.material.diffColor[2] = CHECKERBOARD(ray.u*3, ray.v*3);
             default:
                 break;
         }
@@ -137,17 +142,18 @@ void cleanupScene(){
     }
     objects.clear();
     lights.clear();
-
 }
 
 
 /* just a place holder, feel free to edit */
 void render(char* filename, int numSamples) {
+    pMap = Ray::buildPhotonMap();
     Framebuffer buf = Framebuffer(IMAGE_WIDTH, IMAGE_HEIGHT, numSamples);
     std::cout << "Rendering " << filename<< std::endl;
 //    buf.renderLens(filename, SENSOR_DISTANCE);
     buf.renderPinhole(filename, SENSOR_DISTANCE);
     std::cout << "Done rendering." << std::endl;
+
 }
 
 int main(int argc, char *argv[]) {
@@ -254,8 +260,8 @@ int main(int argc, char *argv[]) {
 //    scene5_total_timer.stop();
 
     std::cout << "Fun scene. Load: " << fun_scene_build_timer.getElapsedTimeInMilliSec()
-    << "ms, Draw: "  << fun_scene_draw_timer.getElapsedTimeInMilliSec()
-    << "ms, Total: " << fun_scene_total_timer.getElapsedTimeInMilliSec()
+    << "ms, Draw: "  << fun_scene_draw_timer.getElapsedTimeInSec()
+    << "ms, Total: " << fun_scene_total_timer.getElapsedTimeInSec()
     << "ms." << std::endl;
 
 //    std::cout << "Scene1. Load: " << scene1_build_timer.getElapsedTimeInMilliSec()

@@ -29,6 +29,10 @@ public:
         float lengthSq = x*x + y*y + z*z;
         return std::sqrt(lengthSq);
     };
+    inline float lengthSq(void) const {
+        return x*x + y*y + z*z;
+    }
+
     inline Vec3f& normalize(){
         float length = this->length();
         x = x / length;
@@ -92,7 +96,7 @@ public:
         if(axis == 1){ return y; }
         else { return z; }
     }
-
+    static void getBasis(const Vec3f &input, Vec3f &outX, Vec3f &outY, Vec3f &outZ);
     friend std::ostream& operator<<(std::ostream&, const Vec3f &vec);
     
 };

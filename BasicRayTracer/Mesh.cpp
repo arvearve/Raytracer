@@ -67,6 +67,10 @@ Vec3f Mesh::normal(const PolygonIO polygon) const {
 
 #pragma mark - Triangle stuff
 
+float Triangle::area(){
+    return Vec3f::cross(u, v).length() * 0.5;
+}
+
 bool Triangle::intersect(Ray &ray) const{
     // First check for plane intersection
     Vec3f w0 = p0 - ray.startPosition;
